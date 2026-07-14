@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0ワドワドプロトタイプ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#4285F4;
+    --red:#EA4335;
+    --yellow:#FBBC05;
+    --green:#34A853;
+    --text:#202124;
+    --gray:#5f6368;
+    --link:#1a0dab;
+    --visited:#4b2e83;
+    --url-green:#006621;
+    --border:#dfe1e5;
+    --hover:#f8f9fa;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans JP', Arial, sans-serif;
+    color:var(--text);
+    background:#fff;
+    min-height:100vh;
+  }
+  a{ color:inherit; }
+
+  /* ---------- ロゴ ---------- */
+  .logo{
+    font-weight:700;
+    font-size:2.6rem;
+    letter-spacing:.01em;
+    user-select:none;
+    white-space:nowrap;
+  }
+  .logo.small{ font-size:1.5rem; }
+  /* カービィ / ワドルディ / マホロア / メタナイト / 弱ったマホロア / 商人マホロア のカラーテーマ */
+  :root{
+    --c-kirby:#FF9BC2;      /* カービィ: ピンク */
+    --c-waddledee:#E8935A;  /* ワドルディ: オレンジ系 */
+    --c-magolor:#9B6FC9;    /* マホロア: パープル(ローブ) */
+    --c-metaknight:#4A6FA8; /* メタナイト: 鋼のような青 */
+    --c-magolor-weak:#9AA7B0; /* 弱った方のマホロア: 青ざめたグレイッシュカラー */
+    --c-magolor-merchant:#C9A227; /* 商人マホロア: 商人らしい金茶色 */
+  }
+  .logo span:nth-child(6n+1){color:var(--c-kirby);}
+  .logo span:nth-child(6n+2){color:var(--c-waddledee);}
+  .logo span:nth-child(6n+3){color:var(--c-magolor);}
+  .logo span:nth-child(6n+4){color:var(--c-metaknight);}
+  .logo span:nth-child(6n+5){color:var(--c-magolor-weak);}
+  .logo span:nth-child(6n){color:var(--c-magolor-merchant);}
+
+  /* ---------- ホーム画面 ---------- */
+  #homeView{
+    min-height:88vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:20px;
+    text-align:center;
+  }
+  #homeView .logo{ margin-bottom:26px; font-size:clamp(2rem, 7vw, 3.2rem); }
+  .tagline{ color:var(--gray); font-size:.85rem; margin:-14px 0 26px; }
+
+  .searchbox{
+    width:100%; max-width:584px;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--border); border-radius:24px;
+    padding:11px 18px;
+    box-shadow:0 1px 6px rgba(32,33,36,.12);
+    transition:box-shadow .15s ease;
+  }
+  .searchbox:hover, .searchbox:focus-within{ box-shadow:0 1px 10px rgba(32,33,36,.22); }
+  .searchbox svg{ flex:0 0 auto; color:var(--gray); }
+  .searchbox input{
+    flex:1; border:none; outline:none; font-size:1rem; color:var(--text);
+    font-family:'Noto Sans JP', Arial, sans-serif; background:transparent;
+  }
+  .searchbox .clear{
+    cursor:pointer; color:var(--gray); border:none; background:none; font-size:1.1rem;
+    display:none; padding:0 2px;
+  }
+  .searchbox .mic{
+    cursor:pointer; color:var(--gray); border:none; background:none; padding:2px 2px 2px 4px;
+    display:flex; align-items:center; border-left:1px solid var(--border); padding-left:10px;
+    transition:color .15s ease;
+  }
+  .searchbox .mic:hover{ color:var(--blue); }
+  .searchbox .mic.listening{ color:var(--red); animation:pulse 1s infinite; }
+  .searchbox .camera{
+    cursor:pointer; color:var(--gray); border:none; background:none; padding:2px 2px 2px 4px;
+    display:flex; align-items:center; border-left:1px solid var(--border); padding-left:10px;
+    transition:color .15s ease;
+  }
+  .searchbox .camera:hover{ color:var(--blue); }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .mic-status{
+    font-size:.72rem; color:var(--red); margin-top:8px; min-height:1em;
+    text-align:center;
+  }
+  .topbar .mic-status{ flex-basis:100%; }
+
+  /* ---------- コンテンツ切替タブ(Web/画像) ---------- */
+  .modetabs{
+    display:flex; gap:18px; padding:0 24px; margin-top:4px;
+  }
+  .modetabs .modetab{
+    font-size:.82rem; color:var(--gray); padding:10px 2px; cursor:pointer;
+    border-bottom:3px solid transparent; user-select:none; display:flex; align-items:center; gap:5px;
+  }
+  .modetabs .modetab.active{ color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
+
+  /* ---------- 画像検索グリッド ---------- */
+  #imageResults{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr));
+    gap:14px; padding:14px 24px 20px; max-width:900px;
+  }
+  .imgcard{ cursor:pointer; text-decoration:none; color:inherit; }
+  .imgcard .thumbwrap{
+    width:100%; aspect-ratio:4/3; border-radius:8px; overflow:hidden; background:var(--hover);
+    border:1px solid var(--border);
+  }
+  .imgcard img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .2s ease; }
+  .imgcard:hover img{ transform:scale(1.05); }
+  .imgcard .imgtitle{ font-size:.76rem; color:var(--text); margin-top:5px; line-height:1.35; }
+  .imgcard .imgsite{ font-size:.68rem; color:var(--gray); }
+  .img-note{
+    padding:10px 24px 0; font-size:.72rem; color:var(--gray); max-width:900px;
+  }
+
+  /* ---------- 類似画像アップロード検索 ---------- */
+  #reverseImageSearch{
+    max-width:900px; margin:16px 24px 6px;
+    background:#fbfbfd; border:1px dashed var(--border); border-radius:10px;
+    padding:16px 18px;
+  }
+  .ris-row{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .ris-dropzone{
+    border:2px dashed var(--border); border-radius:8px; padding:14px 18px;
+    font-size:.82rem; color:var(--gray); cursor:pointer; text-align:center;
+    flex:1; min-width:220px; transition:border-color .15s ease, background .15s ease;
+  }
+  .ris-dropzone:hover, .ris-dropzone.dragover{ border-color:var(--blue); background:#f5f8ff; }
+  .ris-preview{ display:flex; align-items:center; gap:10px; }
+  .ris-preview img{ width:56px; height:56px; object-fit:cover; border-radius:6px; border:1px solid var(--border); }
+  .ris-preview .ris-filename{ font-size:.76rem; color:var(--text); max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #risButton{
+    background:var(--blue); color:#fff; border:none; border-radius:6px;
+    padding:10px 18px; font-size:.82rem; cursor:pointer; white-space:nowrap;
+  }
+  #risButton:disabled{ background:#c3d2f5; cursor:default; }
+  #risStatus{ font-size:.76rem; color:var(--gray); margin-top:10px; }
+  #risResults{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+    gap:12px; margin-top:14px;
+  }
+  .ris-card{ text-decoration:none; color:inherit; display:block; }
+  .ris-card .thumbwrap{ position:relative; width:100%; aspect-ratio:4/3; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--hover); }
+  .ris-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ris-card .ris-score{
+    position:absolute; top:6px; right:6px; background:rgba(32,33,36,.75); color:#fff;
+    font-size:.68rem; padding:2px 7px; border-radius:10px;
+  }
+  .ris-card .ris-title{ font-size:.74rem; color:var(--text); margin-top:5px; line-height:1.3; }
+
+  /* ---------- AI要約ボックス(Google風 AI Overview) ---------- */
+  #aiSummaryBox{
+    max-width:600px; margin:0 24px 20px;
+    background:linear-gradient(135deg,#f3f0ff,#eef6ff);
+    border:1px solid #dcd6f7; border-radius:10px; padding:14px 18px;
+  }
+  #aiSummaryBox .ai-label{
+    display:flex; align-items:center; gap:6px; font-size:.72rem; font-weight:700;
+    color:#6b4fbb; margin-bottom:6px; letter-spacing:.03em;
+  }
+  #aiSummaryBox .ai-label .dot{
+    width:8px; height:8px; border-radius:50%;
+    background:conic-gradient(from 0deg, var(--c-kirby), var(--c-waddledee), var(--c-magolor), var(--c-metaknight), var(--c-magolor-weak), var(--c-magolor-merchant));
+  }
+  #aiSummaryBox .ai-text{ font-size:.88rem; color:var(--text); line-height:1.6; }
+  #aiSummaryBox .ai-note{ font-size:.66rem; color:var(--gray); margin-top:8px; }
+
+  .home-buttons{ margin-top:28px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    background:#f8f9fa; border:1px solid #f8f9fa; border-radius:4px;
+    padding:9px 16px; font-size:.82rem; color:#3c4043; cursor:pointer;
+  }
+  .btn:hover{ border-color:var(--border); box-shadow:0 1px 1px rgba(0,0,0,.1); background:#f8f9fa; }
+
+  .home-topics{
+    margin-top:34px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:600px;
+  }
+  .home-topics span{
+    font-size:.75rem; color:var(--gray); border:1px solid var(--border); border-radius:14px;
+    padding:5px 12px; cursor:pointer;
+  }
+  .home-topics span:hover{ background:var(--hover); }
+
+  /* ---------- 検索履歴 ---------- */
+  .history-section{
+    margin-top:30px; max-width:560px; width:100%;
+  }
+  .history-header{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:.74rem; color:var(--gray); margin-bottom:8px;
+  }
+  .history-header .clearHistoryBtn{
+    background:none; border:none; color:var(--blue); cursor:pointer; font-size:.72rem; padding:0;
+  }
+  .history-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .history-chip{
+    display:flex; align-items:center; gap:6px;
+    font-size:.78rem; color:var(--text); background:#fff; border:1px solid var(--border);
+    border-radius:16px; padding:6px 12px 6px 10px; cursor:pointer;
+  }
+  .history-chip:hover{ background:var(--hover); border-color:#c7cad1; }
+  .history-chip .clock{ color:var(--gray); flex:0 0 auto; }
+  .history-chip .count{ color:var(--gray); font-size:.68rem; }
+  .history-empty{ font-size:.76rem; color:var(--gray); text-align:center; }
+
+  /* ---------- Yahoo!風パネル ---------- */
+  .yahoo-panel{
+    margin-top:36px; width:100%; max-width:900px; text-align:left;
+    border:1px solid #e3e3e3; border-radius:6px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+    font-family:'Noto Sans JP', 'Hiragino Sans', sans-serif;
+  }
+  .yahoo-nav{
+    display:flex; flex-wrap:wrap; gap:0; background:#fff;
+    border-bottom:3px solid #FF0033;
+  }
+  .yahoo-nav .yahoo-cat{
+    flex:1 1 auto; min-width:64px; display:flex; flex-direction:column; align-items:center;
+    gap:4px; padding:10px 6px; cursor:pointer; color:#333; font-size:.68rem;
+    border-right:1px solid #f0f0f0; transition:background .12s ease;
+  }
+  .yahoo-nav .yahoo-cat:last-child{ border-right:none; }
+  .yahoo-nav .yahoo-cat:hover{ background:#fff5f5; }
+  .yahoo-nav .yahoo-cat .yahoo-icon{ font-size:1.3rem; }
+  .yahoo-columns{
+    display:grid; grid-template-columns:2fr 1fr 1fr; gap:0; background:#fff;
+  }
+  .yahoo-card{ padding:14px 16px; border-right:1px solid #eee; }
+  .yahoo-card:last-child{ border-right:none; }
+  .yahoo-card-title{
+    font-size:.78rem; font-weight:700; color:#333; margin-bottom:8px;
+    padding-bottom:6px; border-bottom:2px solid #FF0033; display:inline-block;
+  }
+  .yahoo-topics ul{ list-style:none; margin:0; padding:0; }
+  .yahoo-topics li{
+    font-size:.78rem; padding:6px 0; border-bottom:1px dotted #e5e5e5;
+  }
+  .yahoo-topics li:last-child{ border-bottom:none; }
+  .yahoo-topics li a{ color:#0055aa; text-decoration:none; }
+  .yahoo-topics li a:hover{ text-decoration:underline; }
+  .yahoo-topics li .yahoo-topic-tag{
+    display:inline-block; font-size:.62rem; color:#fff; background:#999;
+    border-radius:2px; padding:1px 5px; margin-right:6px; vertical-align:middle;
+  }
+  #yahooWeatherBody{ font-size:.78rem; color:#333; line-height:1.7; }
+  #yahooWeatherBody .yahoo-temp{ font-size:1.4rem; font-weight:700; color:#d5001c; }
+  .yahoo-ranking ol{ margin:0; padding-left:1.1rem; }
+  .yahoo-ranking li{
+    font-size:.76rem; padding:5px 0; color:#0055aa; cursor:pointer;
+  }
+  .yahoo-ranking li:hover{ text-decoration:underline; }
+  @media (max-width:640px){
+    .yahoo-columns{ grid-template-columns:1fr; }
+    .yahoo-card{ border-right:none; border-bottom:1px solid #eee; }
+  }
+
+  footer.homefoot{
+    background:#f2f2f2; color:var(--gray); font-size:.8rem;
+    padding:14px 26px; display:flex; justify-content:space-between; flex-wrap:wrap;
+  }
+  footer.homefoot a{ margin-right:18px; }
+
+  /* ---------- 結果画面 ---------- */
+  #resultsView{ display:none; }
+  .topbar{
+    display:flex; align-items:center; gap:26px;
+    padding:18px 24px 0; flex-wrap:wrap;
+  }
+  .topbar .logo{ cursor:pointer; }
+  .topbar .searchbox{ max-width:560px; flex:1; min-width:260px; padding:9px 16px; }
+
+  .tabs{
+    display:flex; gap:22px; padding:14px 24px 0; border-bottom:1px solid var(--border);
+    margin-top:14px; flex-wrap:wrap;
+  }
+  .tabs .tab{
+    font-size:.85rem; color:var(--gray); padding-bottom:12px; cursor:pointer;
+    border-bottom:3px solid transparent; user-select:none;
+  }
+  .tabs .tab.active{ color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
+  .tabs .tab:hover{ color:var(--text); }
+
+  .stats{
+    padding:14px 24px 4px; color:var(--gray); font-size:.82rem; max-width:640px;
+  }
+
+  #results{ padding:6px 24px 20px; max-width:640px; }
+  .result{ margin-bottom:26px; max-width:600px; }
+  .result .favtitle{ display:flex; align-items:center; gap:8px; }
+  .result .favicon{
+    width:22px; height:22px; border-radius:50%; flex:0 0 auto;
+    background:linear-gradient(135deg,var(--blue),var(--green));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:.65rem; font-weight:700;
+  }
+  .result .site{ font-size:.78rem; color:var(--text); }
+  .result .url{ font-size:.78rem; color:var(--url-green); word-break:break-all; }
+  .result h3{ margin:2px 0 4px; font-size:1.15rem; font-weight:400; }
+  .result h3 a{ color:var(--link); text-decoration:none; }
+  .result h3 a:hover{ text-decoration:underline; }
+  .result p.desc{ margin:0; color:var(--gray); font-size:.88rem; line-height:1.58; }
+  .result p.desc b{ color:var(--text); font-weight:700; }
+  .result .tags{ margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+  .result .tags span{
+    font-size:.68rem; color:var(--gray); background:var(--hover);
+    border-radius:10px; padding:2px 9px;
+  }
+
+  .empty{ padding:30px 0; color:var(--gray); font-size:.9rem; max-width:560px; }
+
+  .pagination{
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    padding:20px 24px 50px; flex-wrap:wrap;
+  }
+  .pagination button{
+    border:none; background:none; cursor:pointer; font-size:.85rem; color:var(--blue);
+    padding:8px 12px; border-radius:4px; font-family:inherit;
+  }
+  .pagination button.page.active{ color:#fff; background:var(--blue); border-radius:50%; width:28px; height:28px; padding:0; }
+  .pagination button:disabled{ color:#c0c0c0; cursor:default; }
+  .pagination button:hover:not(:disabled):not(.active){ background:var(--hover); }
+
+  @media (max-width:640px){
+    .topbar{ padding:12px 14px 0; }
+    #results, .stats, .tabs{ padding-left:14px; padding-right:14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ホーム画面 ============ -->
+<div id="homeView">
+  <div class="logo" id="homeLogo"></div>
+  <div class="tagline">クロール件数: <span id="homeCount">0</span>ページ &middot; 実験的プロトタイプ検索</div>
+  <div class="searchbox">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="qHome" type="text" placeholder="0ワドワドプロトタイプで検索" autocomplete="off">
+    <button class="clear" id="clearHome">&times;</button>
+    <button class="mic" id="micHome" title="音声で検索">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
+    <button class="camera" id="cameraHome" title="画像で検索">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </button>
+    <input type="file" id="cameraHomeInput" accept="image/*" style="display:none;">
+  </div>
+  <div class="mic-status" id="micStatusHome"></div>
+  <div class="home-buttons">
+    <button class="btn" id="btnSearchHome">0ワドワドで検索</button>
+    <button class="btn" id="btnLucky">I'm Feeling ワドワド</button>
+    <button class="btn" id="btnConfigureHome">⚙ 接続設定</button>
+  </div>
+  <div class="home-topics" id="homeTopics" style="display:none;"></div>
+  <div class="history-section" id="historySection" style="display:none;">
+    <div class="history-header">
+      <span>🕐 最近の検索</span>
+      <button class="clearHistoryBtn" id="clearHistoryBtn">履歴を削除</button>
+    </div>
+    <div class="history-chips" id="historyChips"></div>
+  </div>
+
+  <div class="yahoo-panel" id="yahooPanel">
+    <div class="yahoo-nav" id="yahooNav"></div>
+    <div class="yahoo-columns">
+      <div class="yahoo-card yahoo-topics">
+        <div class="yahoo-card-title">トピックス</div>
+        <ul id="yahooTopicsList"></ul>
+      </div>
+      <div class="yahoo-card yahoo-weather" id="yahooWeatherCard">
+        <div class="yahoo-card-title">天気</div>
+        <div id="yahooWeatherBody">読み込み中...</div>
+      </div>
+      <div class="yahoo-card yahoo-ranking">
+        <div class="yahoo-card-title">検索ランキング</div>
+        <ol id="yahooRankingList"></ol>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="homefoot" id="homeFooter">
+  <div>0ワドワドプロトタイプ</div>
+  <div><a href="#" id="aboutLink">このサイトについて</a><a href="https://github.com" target="_blank" rel="noopener">crawler.pyでクロールを追加</a><a href="#" id="agentsStatusLink">🤖 自律クローラー状況</a></div>
+</footer>
+
+<!-- ============ 結果画面 ============ -->
+<div id="resultsView">
+  <div class="topbar">
+    <div class="logo small" id="topLogo"></div>
+    <div class="searchbox">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="qTop" type="text" autocomplete="off">
+      <button class="clear" id="clearTop">&times;</button>
+      <button class="mic" id="micTop" title="音声で検索">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <button class="camera" id="cameraTop" title="画像で検索">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <input type="file" id="cameraTopInput" accept="image/*" style="display:none;">
+    </div>
+    <div class="mic-status" id="micStatusTop"></div>
+    <button class="btn" id="btnConfigureTop" style="flex:0 0 auto; align-self:center;">⚙ 接続設定</button>
+  </div>
+  <div class="modetabs" id="modetabs">
+    <div class="modetab active" data-mode="web">🔎 Web</div>
+    <div class="modetab" data-mode="images">🖼 画像</div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="stats" id="stats"></div>
+  <div id="aiSummaryBox" style="display:none;"></div>
+  <div id="results"></div>
+  <div class="img-note" id="imgNote" style="display:none;">キーワードに一致するページのイメージです(デモ用サンプル画像)。実運用では画像クローラーが取得した実際のサムネイルに置き換わります。</div>
+  <div id="reverseImageSearch" style="display:none;">
+    <div class="ris-row">
+      <label class="ris-dropzone" id="risDropzone" for="risFileInput">
+        📷 ここをクリックして画像を選択(またはドラッグ&ドロップ)<br>似ている画像をデータベースから探します
+      </label>
+      <input type="file" id="risFileInput" accept="image/*" style="display:none;">
+      <div class="ris-preview" id="risPreview" style="display:none;">
+        <img id="risPreviewImg" src="" alt="preview">
+        <span class="ris-filename" id="risFilename"></span>
+      </div>
+      <button id="risButton" disabled>似ている画像を探す</button>
+    </div>
+    <div id="risStatus"></div>
+    <div id="risResults"></div>
+  </div>
+  <div id="imageResults" style="display:none;"></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+const DATA = {"generated_at": "2026-07-08", "pages": [{"id": 1, "topic": "プログラミング", "title": "Python チュートリアル(公式ドキュメント)", "url": "https://docs.python.org/ja/3/tutorial/", "description": "Python Software Foundationが公開する公式チュートリアル。言語の基本的な文法や機能を、実際にインタープリタを動かしながら学べる構成になっている。", "tags": ["Python", "プログラミング", "チュートリアル", "公式ドキュメント", "入門"]}, {"id": 2, "topic": "プログラミング", "title": "ゼロからのPython入門講座", "url": "https://www.python.jp/train/index.html", "description": "python.jpが提供する、プログラミング未経験者向けの入門講座。ブラウザ上で動くGoogle Colaboratoryを使い、環境構築なしでPythonを体験できる。", "tags": ["Python", "Colab", "初心者", "プログラミング入門", "無料"]}, {"id": 3, "topic": "プログラミング", "title": "Python Education(Google for Developers)", "url": "https://developers.google.com/edu/python/introduction?hl=ja", "description": "Googleが社内研修をもとに公開しているPythonオンラインコース。変数や演算子、インタープリタの基本動作をやさしく解説している。", "tags": ["Python", "Google", "オンラインコース", "プログラミング", "基礎"]}, {"id": 4, "topic": "プログラミング", "title": "Pythonの基礎を1から学べるチュートリアル20選", "url": "https://www.sejuku.net/blog/3741", "description": "侍エンジニアブログによるまとめ記事。書籍・動画・PDFなど形式別におすすめのPython学習教材を20個紹介している。", "tags": ["Python", "学習教材", "まとめ", "プログラミングスクール"]}, {"id": 5, "topic": "プログラミング", "title": "Pythonプログラミング入門(東京大学)", "url": "https://utokyo-ipp.github.io/", "description": "東京大学が公開している教養課程向けのPython入門教材。授業で使うノートブック形式のコンテンツをそのまま無料公開している。", "tags": ["Python", "大学教材", "東京大学", "Jupyter", "プログラミング入門"]}, {"id": 6, "topic": "料理", "title": "料理初心者さん必見！簡単で美味しい人気レシピ46選", "url": "https://delishkitchen.tv/curations/14335", "description": "デリッシュキッチンによる初心者向けレシピ集。肉じゃがや親子丼など、味付けが簡単な定番おかずを動画つきで紹介している。", "tags": ["料理", "レシピ", "初心者", "動画レシピ", "献立"]}, {"id": 7, "topic": "料理", "title": "お料理初心者さん向け 簡単おすすめレシピ38選", "url": "https://www.kurashiru.com/lists/7f290e49-a42d-4254-b07f-ef5935352ea9", "description": "クラシルが選んだ、料理を始めたばかりの人向けのレシピ集。主食・主菜・副菜・汁物のカテゴリ別に手軽なレシピをまとめている。", "tags": ["料理", "レシピ", "クラシル", "初心者", "時短"]}, {"id": 8, "topic": "料理", "title": "男の料理 初心者向けの簡単レシピ20選", "url": "https://kurelife.jp/media/idea/recipes-for-men/", "description": "クレハの家庭用品サイトが紹介する、料理が苦手な男性向けの入門レシピ集。丼物やおつまみなどボリューム重視のメニューが中心。", "tags": ["料理", "レシピ", "男性向け", "一人暮らし", "簡単"]}, {"id": 9, "topic": "料理", "title": "自炊初心者向け｜まず覚えたい料理の基本と簡単レシピ30選", "url": "https://kurelife.jp/media/idea/beginner/", "description": "一人暮らしを始めた人向けの自炊入門ガイド。必要な調理器具の揃え方から、切り方・加熱方法の基本までを丁寧に解説している。", "tags": ["料理", "自炊", "一人暮らし", "調理器具", "基本"]}, {"id": 10, "topic": "料理", "title": "初心者 料理のレシピ集(クックパッド)", "url": "https://cookpad.com/jp/search/%E5%88%9D%E5%BF%83%E8%80%85%20%E6%96%99%E7%90%86", "description": "国内最大級のレシピ投稿サイト、クックパッドの検索結果ページ。ユーザー投稿による初心者向けレシピが多数掲載されている。", "tags": ["料理", "レシピ", "クックパッド", "投稿サイト"]}, {"id": 11, "topic": "天文・宇宙", "title": "太陽系 - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E5%A4%AA%E9%99%BD%E7%B3%BB", "description": "太陽系の構成や形成の歴史を解説する百科事典記事。8個の惑星や準惑星、太陽系小天体についての基礎知識がまとめられている。", "tags": ["太陽系", "惑星", "宇宙", "Wikipedia", "天文学"]}, {"id": 12, "topic": "天文・宇宙", "title": "天文の基礎知識：8. 惑星(アストロアーツ)", "url": "https://www.astroarts.co.jp/alacarte/kiso/kiso08-j.shtml", "description": "天文情報サイト アストロアーツによる解説記事。2006年に国際天文学連合が定めた惑星の定義と、太陽系8惑星の並び順を紹介している。", "tags": ["惑星", "太陽系", "国際天文学連合", "天文学", "基礎知識"]}, {"id": 13, "topic": "天文・宇宙", "title": "太陽系・太陽系のしくみ(宇宙科学研究所キッズサイト)", "url": "https://www.kids.isas.jaxa.jp/zukan/solarsystem/solarsystem01.html", "description": "JAXAが運営する子ども向けサイト「ウチューンズ」の記事。地球や小惑星帯など、太陽系の仕組みをやさしい言葉で紹介している。", "tags": ["太陽系", "JAXA", "子ども向け", "宇宙", "小惑星"]}, {"id": 14, "topic": "天文・宇宙", "title": "宇宙のひみつ(すばるキッズ｜ハワイ観測所)", "url": "https://subarutelescope.org/jp/Kids/kidsastronomer/space.html", "description": "すばる望遠鏡ハワイ観測所による子ども向け天文コンテンツ。太陽系の8惑星と、望遠鏡による最新の観測状況を紹介している。", "tags": ["宇宙", "すばる望遠鏡", "子ども向け", "太陽系", "観測"]}, {"id": 15, "topic": "天文・宇宙", "title": "5分でわかる太陽系！惑星の順番/距離/特徴(ホンシェルジュ)", "url": "https://honcierge.jp/articles/shelf_story/6112", "description": "書評サイト ホンシェルジュの解説記事。太陽系の成り立ちや8惑星の順番・距離・特徴を短時間で理解できるようにまとめている。", "tags": ["太陽系", "惑星", "宇宙教育", "解説記事"]}, {"id": 16, "topic": "登山・旅行", "title": "富士登山初心者向けガイド(フジヤマNAVI)", "url": "https://www.fujiyama-navi.jp/entries/7Jaye", "description": "富士山・富士五湖観光の公式サイトによる初心者向け記事。登山に必要な知識や持ち物を丁寧に解説している。", "tags": ["富士山", "登山", "初心者", "持ち物", "観光"]}, {"id": 17, "topic": "登山・旅行", "title": "富士登山｜初心者が富士山に登るには？(Fuji,CanGo)", "url": "https://www.fuji-net.co.jp/report/cat-camp-climbing-outdoor/8878/", "description": "地元スタッフによる富士登山ガイド記事。ツアー参加のメリットや吉田ルートの特徴、登山マナーについて紹介している。", "tags": ["富士山", "登山", "吉田ルート", "ツアー", "マナー"]}, {"id": 18, "topic": "登山・旅行", "title": "富士登山の完全ガイド(富士吉田市観光ガイド)", "url": "https://fujiyoshida.net/feature/fujitozan/index", "description": "富士吉田市の公式観光サイトによる登山特集ページ。ルート案内から服装・持ち物、ご来光登山の楽しみ方までを網羅している。", "tags": ["富士山", "登山", "富士吉田", "ご来光", "モデルコース"]}, {"id": 19, "topic": "登山・旅行", "title": "富士山登山・全6ルート比較(YAMA HACK)", "url": "https://yamahack.com/4794", "description": "登山メディア YAMA HACKによるルート比較記事。吉田ルートや富士宮ルートなど、6つの登山ルートの難易度とコースタイムを紹介している。", "tags": ["富士山", "登山ルート", "難易度", "コースタイム"]}, {"id": 20, "topic": "登山・旅行", "title": "初心者が富士登山を成功させるためのポイント(アクティビティジャパン)", "url": "https://activityjapan.com/feature/mtfuji-climbing-beginner/", "description": "アクティビティ予約サイトによる記事。ガイドツアーの活用法や高山病対策など、初心者が安全に登頂するための注意点をまとめている。", "tags": ["富士山", "登山", "初心者", "高山病", "ガイドツアー"]}, {"id": 21, "topic": "サッカー", "title": "サッカー日本代表 - スポーツナビ", "url": "https://soccer.yahoo.co.jp/japan/", "description": "Yahoo!スポーツによるサッカー日本代表の特設ページ。試合ハイライト動画や最新ニュースをまとめている。", "tags": ["サッカー", "日本代表", "ハイライト動画", "スポーツナビ"]}, {"id": 22, "topic": "サッカー", "title": "サッカーニュース 日本代表や海外の最新情報 - 日本経済新聞", "url": "https://www.nikkei.com/sports/soccer/", "description": "日本経済新聞のサッカー面。試合結果や日程、著名人によるコラムなどをまとめたニュースページ。", "tags": ["サッカー", "日本代表", "ニュース", "日本経済新聞"]}, {"id": 23, "topic": "サッカー", "title": "サッカー日本代表 最新メンバー | ゲキサカ", "url": "https://web.gekisaka.jp/pickup/detail/?214639-214639-fl=", "description": "ゲキサカによる日本代表チーム紹介記事。監督の方針やチーム編成の経緯、W杯に向けた強化のポイントを詳しく解説している。", "tags": ["サッカー", "日本代表", "ゲキサカ", "W杯", "メンバー"]}, {"id": 24, "topic": "サッカー", "title": "サッカー日本代表のニュース・速報 | THE ANSWER", "url": "https://the-ans.jp/tag/soccer-team-japan/", "description": "THE ANSWERによる日本代表関連の速報記事一覧。選手のSNS投稿を交えた裏話やエピソードを紹介している。", "tags": ["サッカー", "日本代表", "速報", "THE ANSWER"]}, {"id": 25, "topic": "サッカー", "title": "日本代表のニュース | サッカーキング", "url": "https://www.soccer-king.jp/team/article/680088.html", "description": "サッカーキングによる日本代表の最新ニュースまとめ。移籍情報や監督采配、代表引退の話題などを掲載している。", "tags": ["サッカー", "日本代表", "移籍情報", "サッカーキング"]}, {"id": 26, "topic": "サッカー", "title": "最新ニュース一覧｜日本代表｜JFA", "url": "https://www.jfa.jp/national_team/news/", "description": "日本サッカー協会(JFA)公式サイトの日本代表最新ニュース一覧。代表戦の結果や公式発表を掲載している。", "tags": ["サッカー", "日本代表", "JFA", "公式", "ニュース"]}, {"id": 27, "topic": "サッカー", "title": "サッカーニュース、試合速報、試合日程・結果＆移籍情報 | Goal.com 日本", "url": "https://www.goal.com/jp", "description": "Goal.com日本版。ワールドカップの経過や海外移籍情報など、世界のサッカーニュースを幅広く扱うメディア。", "tags": ["サッカー", "ワールドカップ", "移籍情報", "海外サッカー"]}, {"id": 28, "topic": "健康・フィットネス", "title": "ダイエット効果が高い運動方法とは？(資格のキャリカレ)", "url": "https://www.c-c-j.com/course/healing/diet/column/column04/", "description": "資格のキャリカレによる解説記事。ジョギングなど有酸素運動が消費カロリーやダイエットに与える効果を紹介している。", "tags": ["ダイエット", "有酸素運動", "ジョギング", "健康"]}, {"id": 29, "topic": "健康・フィットネス", "title": "ダイエットにおすすめの効果的な運動方法15選(かたぎり塾)", "url": "https://katagirijuku.jp/column/diet_motion_meal", "description": "パーソナルジム「かたぎり塾」による、筋トレと有酸素運動を組み合わせた減量方法の解説記事。", "tags": ["ダイエット", "筋トレ", "有酸素運動", "パーソナルジム"]}, {"id": 30, "topic": "健康・フィットネス", "title": "ダイエットにおすすめの運動5選(ハルメク美と健康)", "url": "https://halmek.co.jp/beauty/c/bbody/10042", "description": "大人世代向けメディア ハルメクによる記事。有酸素運動と筋トレの違いや、組み合わせて痩せるコツを紹介している。", "tags": ["ダイエット", "大人世代", "有酸素運動", "筋トレ"]}, {"id": 31, "topic": "健康・フィットネス", "title": "健康的に痩せるダイエット成功の秘訣を医師が解説(つねだクリニック)", "url": "https://tsuneda-clinic.com/blog/healthyweightloss/", "description": "内科クリニックの医師による解説記事。食事・運動・薬をバランスよく組み合わせた医学的な減量アプローチを紹介している。", "tags": ["ダイエット", "医師監修", "内科", "健康的に痩せる"]}, {"id": 32, "topic": "健康・フィットネス", "title": "健康的に痩せるための運動・食事の方法(グリコ)", "url": "https://www.glico.com/jp/powerpro/diet/entry81/", "description": "江崎グリコによる健康コラム。目標体重の設定方法から、運動・食事・生活習慣を見直すコツまでを解説している。", "tags": ["ダイエット", "目標設定", "食事管理", "グリコ"]}, {"id": 33, "topic": "映画", "title": "2026年製作映画 おすすめ人気ランキング(Filmarks)", "url": "https://filmarks.com/list/year/2020s/2026", "description": "映画レビューサイトFilmarksによる、2026年製作映画のおすすめ人気ランキングページ。", "tags": ["映画", "ランキング", "Filmarks", "2026年"]}, {"id": 34, "topic": "映画", "title": "国内映画ランキング(映画.com)", "url": "https://eiga.com/ranking/jp/", "description": "映画.comによる国内映画の週末興行成績ランキングページ。毎週の動員数をもとに順位を更新している。", "tags": ["映画", "興行収入", "ランキング", "映画.com"]}, {"id": 35, "topic": "映画", "title": "2026年、スクリーンで観るべき映画ガイド【洋画】(Time Out東京)", "url": "https://www.timeout.jp/tokyo/ja/film/the-best-movies-of-2026", "description": "Time Out東京版による、2026年に劇場公開される注目の洋画をジャンル横断でまとめた特集記事。", "tags": ["映画", "洋画", "2026年", "Time Out"]}, {"id": 36, "topic": "映画", "title": "2026年映画興行収入ランキング(ピクシーン)", "url": "https://pixiin.com/ranking-japan-boxoffice2026/", "description": "映画評価サイト ピクシーンによる、2026年の国内外の映画興行収入ランキングと評価をまとめたページ。", "tags": ["映画", "興行収入", "評価", "ピクシーン"]}, {"id": 37, "topic": "映画", "title": "2026年！絶対に見逃せない期待の映画ベスト8(映画喫茶Cafe'80s)", "url": "https://note.com/bttf80s/n/n7c3ae46cd137", "description": "個人ブログ「映画喫茶Cafe'80s」による、2026年公開予定のSF大作を中心とした期待作まとめ記事。", "tags": ["映画", "SF映画", "2026年", "ブログ"]}, {"id": 38, "topic": "映画", "title": "映画ランキング／レビュー評価4.0以上(プレシネマ)", "url": "https://precinemablog.com/entry/precinema-bestmovie", "description": "試写会情報サイト「プレシネマ」による、複数のレビューサイトの平均評価が4.0以上の高評価映画をまとめたランキング。", "tags": ["映画", "レビュー評価", "ランキング", "プレシネマ"]}, {"id": 39, "topic": "映画", "title": "2026年公開予定「注目映画」一覧(ORICON NEWS)", "url": "https://www.oricon.co.jp/special/73722/", "description": "ORICON NEWSによる、2026年に日本で公開される注目の洋画・邦画をまとめた特集ページ。", "tags": ["映画", "2026年公開", "邦画", "洋画", "ORICON"]}, {"id": 40, "topic": "投資・資産形成", "title": "投資初心者の方に新NISAをわかりやすく解説(大和コネクト証券)", "url": "https://www.connect-sec.co.jp/service/nisa/column_b02/", "description": "大和コネクト証券による新NISAの解説記事。制度の仕組みやおすすめ銘柄の選び方をわかりやすく紹介している。", "tags": ["NISA", "投資初心者", "資産運用", "大和コネクト証券"]}, {"id": 41, "topic": "投資・資産形成", "title": "はじめてのNISA(松井証券)", "url": "https://www.matsui.co.jp/nisa/study/", "description": "松井証券公式サイトのNISA入門ページ。口座開設の流れや非課税制度の基本を初心者向けに解説している。", "tags": ["NISA", "口座開設", "松井証券", "入門"]}, {"id": 42, "topic": "投資・資産形成", "title": "NISAの始め方｜口座開設手順(Yahoo!ファイナンス)", "url": "https://finance.yahoo.co.jp/nisa/article/detail/008", "description": "Yahoo!ファイナンスによるNISAの始め方解説記事。口座開設の手順や証券会社選びのポイントを紹介している。", "tags": ["NISA", "口座開設", "証券会社", "Yahoo!ファイナンス"]}, {"id": 43, "topic": "投資・資産形成", "title": "新NISAナビ｜初心者も分かるやさしい解説サイト", "url": "https://www.tsumitatenisa.jp/", "description": "「新NISAナビ」による初心者向け解説サイト。銘柄ランキングや制度の最新アップデート情報をまとめている。", "tags": ["NISA", "つみたて投資", "銘柄ランキング", "解説サイト"]}, {"id": 44, "topic": "投資・資産形成", "title": "NISAスタートガイド(楽天証券)", "url": "https://www.rakuten-sec.co.jp/web/lp/nisa_startguide/", "description": "楽天証券公式のNISAスタートガイド。少額からの投資の始め方や入金方法を初心者向けに解説している。", "tags": ["NISA", "楽天証券", "少額投資", "スタートガイド"]}, {"id": 45, "topic": "投資・資産形成", "title": "初級- NISAの基本と始め方(SBI証券)", "url": "https://go.sbisec.co.jp/media/report/investment_recipe/investment_recipe_260423.html", "description": "SBI証券の投資情報メディアによる、社会人1年目に向けたやさしいNISA入門コラム。", "tags": ["NISA", "SBI証券", "社会人", "投資コラム"]}, {"id": 46, "topic": "投資・資産形成", "title": "NISAつみたて投資枠の始め方(りそなグループ)", "url": "https://www.resonabank.co.jp/kojin/column/nisa/column_0003.html", "description": "りそな銀行によるNISA「つみたて投資枠」の始め方解説記事。口座開設から購入までの手順を紹介している。", "tags": ["NISA", "つみたて投資枠", "りそな銀行", "手続き"]}, {"id": 47, "topic": "投資・資産形成", "title": "投資初心者におすすめ「つみたてNISA」の魅力とは(三井住友銀行)", "url": "https://www.smbc.co.jp/kojin/money-viva/special/shin-fund/0002/", "description": "三井住友銀行によるマンガ形式の解説記事。つみたてNISAの非課税メリットや始め方をやさしく紹介している。", "tags": ["NISA", "つみたてNISA", "三井住友銀行", "マンガ解説"]}, {"id": 48, "topic": "星のカービィ", "title": "星のカービィ ディスカバリー Nintendo Switch 2 Edition ＋ スターリーワールド | 任天堂", "url": "https://www.nintendo.com/jp/games/switch2/arzga/index.html", "description": "任天堂公式サイト。Nintendo Switch 2版の追加ストーリー「スターリーワールド」を含む最新作の情報を紹介している。", "tags": ["星のカービィ", "任天堂", "Nintendo Switch 2", "公式サイト", "ディスカバリー"]}, {"id": 49, "topic": "星のカービィ", "title": "星のカービィ キャライト｜バンダイ キャンディ公式サイト", "url": "https://www.bandai.co.jp/candy/products/2026/4570117928154000.html", "description": "バンダイのお菓子付きフィギュア商品ページ。2026年6月発売のカービィ関連キャンディグッズを紹介している。", "tags": ["星のカービィ", "バンダイ", "グッズ", "フィギュア", "お菓子"]}, {"id": 50, "topic": "星のカービィ", "title": "星のカービィポータル", "url": "https://www.kirby.jp/", "description": "シリーズ全体の公式ポータルサイト。最新作やコラボ情報、Kirby Caféなど関連コンテンツをまとめて発信している。", "tags": ["星のカービィ", "公式ポータル", "Kirby Café", "任天堂"]}, {"id": 51, "topic": "星のカービィ", "title": "星のカービィ ディスカバリー | Nintendo Switch | 任天堂", "url": "https://www.nintendo.com/jp/switch/arzga/index.html", "description": "任天堂公式サイト。シリーズ初の3Dアクションとして2022年に発売された「ディスカバリー」の紹介ページ。", "tags": ["星のカービィ", "任天堂", "3Dアクション", "Nintendo Switch"]}, {"id": 52, "topic": "星のカービィ", "title": "Nintendo Switch 2で遊ぶ、カービィの2つの冒険 | トピックス | Nintendo", "url": "https://www.nintendo.com/jp/topics/article/dd6e7d10-400c-4706-b4bf-cd1943740a27", "description": "任天堂公式トピックス記事。新ストーリー「スターリーワールド」の舞台や新アクションについて紹介している。", "tags": ["星のカービィ", "任天堂", "トピックス", "新要素"]}, {"id": 53, "topic": "星のカービィ", "title": "星のカービィ | 本 | 角川つばさ文庫", "url": "https://tsubasabunko.jp/product/kirby/", "description": "角川つばさ文庫の公式ページ。星のカービィを題材にした児童向け小説シリーズの刊行情報を掲載している。", "tags": ["星のカービィ", "角川つばさ文庫", "小説", "児童書"]}, {"id": 54, "topic": "星のカービィ", "title": "星のカービィシリーズ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E6%98%9F%E3%81%AE%E3%82%AB%E3%83%BC%E3%83%93%E3%82%A3%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA", "description": "シリーズ全体を解説する百科事典記事。開発の経緯やキャラクター名の由来、メディアミックス展開などをまとめている。", "tags": ["星のカービィ", "Wikipedia", "シリーズ解説", "ハル研究所"]}, {"id": 55, "topic": "星のカービィ", "title": "「星のカービィファン」公式サイト｜小学館", "url": "https://kirbyfan.corocoro.jp/", "description": "小学館が発行する公式ファン向けメディアのサイト。関連書籍やコンテンツの発売情報を掲載している。", "tags": ["星のカービィ", "小学館", "ファン向けメディア", "書籍"]}, {"id": 56, "topic": "星のカービィ", "title": "星のカービィ ディスカバリー攻略Wiki | AppMedia", "url": "https://appmedia.jp/kirby_discovery", "description": "AppMediaによる攻略Wiki。ステージやトレジャー、ボス攻略、コピー能力データベース、最強ランキングなどをまとめている。", "tags": ["星のカービィ", "ディスカバリー", "攻略Wiki", "AppMedia", "コピー能力"]}, {"id": 57, "topic": "星のカービィ", "title": "星のカービィディスカバリー攻略Wiki - アルテマ", "url": "https://altema.jp/kirbydiscovery/", "description": "アルテマによる攻略Wiki。ストーリー攻略チャート、コピー能力進化、ほおばりヘンケイ、ワドルディの町などの情報を網羅している。", "tags": ["星のカービィ", "ディスカバリー", "攻略Wiki", "アルテマ", "ほおばりヘンケイ"]}, {"id": 58, "topic": "星のカービィ", "title": "星のカービィディスカバリー攻略｜ゲームエイト", "url": "https://game8.jp/kirby-discovery", "description": "ゲームエイトによる攻略サイト。ステージ攻略やボス攻略、コピー能力進化など、ディスカバリーに関する情報を幅広く扱っている。", "tags": ["星のカービィ", "ディスカバリー", "攻略", "ゲームエイト"]}, {"id": 59, "topic": "星のカービィ", "title": "星のカービィ スターアライズ 攻略Wiki - ヘイグ", "url": "https://www.h1g.jp/kirby_stararise/", "description": "ファン参加型の攻略まとめWiki。「星のカービィ スターアライズ」の情報を編集・コメントで補い合うコミュニティサイト。", "tags": ["星のカービィ", "スターアライズ", "攻略Wiki", "ファンサイト"]}, {"id": 60, "topic": "星のカービィ", "title": "星のカービィ ディスカバリー 攻略Wiki - ヘイグ", "url": "https://www.h1g.jp/kirby_discovery/", "description": "ファン参加型の攻略まとめWiki。「星のカービィ ディスカバリー」について編集やコメントで情報を補い合うコミュニティサイト。", "tags": ["星のカービィ", "ディスカバリー", "攻略Wiki", "ファンサイト"]}, {"id": 61, "topic": "星のカービィ", "title": "nJOY：星のカービィの攻略", "url": "https://i-njoy.net/kb1_top.html", "description": "シリーズ1作目「星のカービィ」(ゲームボーイ版)を全ステージマップ付きで攻略する個人運営サイト。", "tags": ["星のカービィ", "初代", "攻略", "ゲームボーイ", "nJOY"]}, {"id": 62, "topic": "星のカービィ", "title": "星のカービィ ディスカバリー攻略まとめ | ワイトのゲーム案内所", "url": "https://gameannaijo.com/category/switch_koryaku/kirby_koryaku/", "description": "個人ブログによる攻略まとめサイト。ミッションやトレジャー、コピー能力ランキングなど細かいテーマ別に記事が整理されている。", "tags": ["星のカービィ", "ディスカバリー", "攻略まとめ", "個人ブログ"]}, {"id": 63, "topic": "星のカービィ", "title": "Kirby - WiKirby: it's a wiki, about Kirby!", "url": "https://wikirby.com/wiki/Kirby", "description": "英語圏のファンによる独立系Kirby専門wiki「WiKirby」のカービィ本人についての解説記事。ゲーム・アニメ・小説など幅広い媒体の情報を網羅する英語圏最大級のカービィ百科事典。", "tags": ["Kirby", "WiKirby", "英語版", "ファンWiki", "百科事典"]}, {"id": 64, "topic": "ワドルディ", "title": "キャラクター紹介 ワドルディ | 星のカービィポータル", "url": "https://www.kirby.jp/character/waddle_dee/", "description": "シリーズ公式サイトによるワドルディの紹介ページ。プププランドの住人として気ままに暮らす姿をイラストとともに紹介している。", "tags": ["ワドルディ", "公式", "星のカービィポータル", "プププランド"]}, {"id": 65, "topic": "ワドルディ", "title": "ワドルディ (わどるでぃ)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%AF%E3%83%89%E3%83%AB%E3%83%87%E3%82%A3", "description": "ピクシブ百科事典によるワドルディの解説記事。シリーズ皆勤の雑魚キャラとしての立ち位置や、作品ごとに異なる行動パターンについて詳しくまとめている。", "tags": ["ワドルディ", "ピクシブ百科事典", "雑魚キャラ", "解説"]}, {"id": 66, "topic": "ワドルディ", "title": "ワドルディ | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%AF%E3%83%89%E3%83%AB%E3%83%87%E3%82%A3", "description": "ファン運営のカービィ専門Wikiによるワドルディの解説記事。各作品での登場のしかたや、アニメ版での人気投票1位の逸話などを紹介している。", "tags": ["ワドルディ", "カービィWiki", "Fandom", "アニメ版"]}, {"id": 67, "topic": "ワドルディ", "title": "バンダナワドルディ - ピクシブ百科事典", "url": "https://dic.pixiv.net/a/%E3%83%90%E3%83%B3%E3%83%80%E3%83%8A%E3%83%AF%E3%83%89%E3%83%AB%E3%83%87%E3%82%A3", "description": "ピクシブ百科事典によるバンダナワドルディの解説記事。槍を武器に操作キャラクターとしても活躍する、通称「バンワド」について紹介している。", "tags": ["ワドルディ", "バンダナワドルディ", "ピクシブ百科事典", "操作キャラ"]}, {"id": 68, "topic": "ワドルディ", "title": "ワドルドゥ隊長 - ピクシブ百科事典", "url": "https://dic.pixiv.net/a/%E3%83%AF%E3%83%89%E3%83%AB%E3%83%89%E3%82%A5%E9%9A%8A%E9%95%B7", "description": "ピクシブ百科事典によるワドルドゥ隊長の解説記事。アニメ版でワドルディたちを率いる隊長としての活躍や、ファンからの呼び名の由来を紹介している。", "tags": ["ワドルディ", "ワドルドゥ隊長", "ピクシブ百科事典", "アニメ版"]}, {"id": 69, "topic": "メタナイト", "title": "キャラクター紹介 メタナイト | 星のカービィポータル", "url": "https://www.kirby.jp/character/meta_knight/", "description": "シリーズ公式サイトによるメタナイトの紹介ページ。青き翼で空を舞い、華麗な剣さばきで戦う「仮面の騎士」として紹介されている。", "tags": ["メタナイト", "公式", "星のカービィポータル", "剣士"]}, {"id": 70, "topic": "メタナイト", "title": "メタナイト (めたないと)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%A1%E3%82%BF%E3%83%8A%E3%82%A4%E3%83%88", "description": "ピクシブ百科事典によるメタナイトの解説記事。クールでニヒルな性格や、剣士としての実力、デザインの変遷などを詳しくまとめている。", "tags": ["メタナイト", "ピクシブ百科事典", "性格", "剣士"]}, {"id": 71, "topic": "メタナイト", "title": "メタナイト | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%A1%E3%82%BF%E3%83%8A%E3%82%A4%E3%83%88", "description": "ファン運営のカービィ専門Wikiによるメタナイトの解説記事。ゲーム各作品での登場シーンや、戦艦ハルバードの艦長としての活躍を紹介している。", "tags": ["メタナイト", "カービィWiki", "Fandom", "戦艦ハルバード"]}, {"id": 72, "topic": "メタナイト", "title": "メタナイト (アニメ) | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%A1%E3%82%BF%E3%83%8A%E3%82%A4%E3%83%88_(%E3%82%A2%E3%83%8B%E3%83%A1)", "description": "アニメ版「星のカービィ」に登場するメタナイト卿についての解説記事。ゲーム版とは異なる非戦的な性格や、村人からの厚い信頼について紹介している。", "tags": ["メタナイト", "アニメ版", "メタナイト卿", "カービィWiki"]}, {"id": 73, "topic": "メタナイト", "title": "メタナイツ (めたないつ)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%A1%E3%82%BF%E3%83%8A%E3%82%A4%E3%83%84", "description": "ピクシブ百科事典によるメタナイツの解説記事。メタナイトの部下として登場する戦士団や、戦艦ハルバードの乗組員たちについて紹介している。", "tags": ["メタナイト", "メタナイツ", "ピクシブ百科事典", "戦艦ハルバード"]}, {"id": 74, "topic": "マホロア", "title": "マホロア (まほろあ)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2", "description": "ピクシブ百科事典によるマホロアの解説記事。名前の由来や独特な口調、初登場作品からその後の展開までを詳しくまとめている。", "tags": ["マホロア", "ピクシブ百科事典", "名前の由来", "解説"]}, {"id": 75, "topic": "マホロア", "title": "マホロア | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2", "description": "ファン運営のカービィ専門Wikiによるマホロアの解説記事。姿かたちの特徴や、シリーズ後続作品での再登場・活躍ぶりを紹介している。", "tags": ["マホロア", "カービィWiki", "Fandom", "姿"]}, {"id": 76, "topic": "マホロア", "title": "マホロア ソウル | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2_%E3%82%BD%E3%82%A6%E3%83%AB", "description": "暴走したマスタークラウンに飲み込まれ、異形と化したマホロアの強化形態についての解説記事。エクストラモードのラスボスとしての技を紹介している。", "tags": ["マホロア", "マホロア ソウル", "カービィWiki", "ラスボス"]}, {"id": 77, "topic": "マホロア", "title": "店主マホロア | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E5%BA%97%E4%B8%BB%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2", "description": "プププ王国でよろずやを営む「店主マホロア」についての解説記事。白と緑を基調とした衣装や、本編マホロアとの関係性を紹介している。", "tags": ["マホロア", "店主マホロア", "商人マホロア", "カービィWiki"]}, {"id": 78, "topic": "マホロア", "title": "マホロア（「星のカービィ」シリーズより）【任天堂図鑑】", "url": "https://www.ndw.jp/catalog-chara-kirby-magolor/", "description": "Nintendo DREAM WEBによるマホロアの図鑑記事。初登場作からスターアライズでの参戦まで、歴代の登場作品を振り返って紹介している。", "tags": ["マホロア", "Nintendo DREAM", "図鑑", "登場作品"]}, {"id": 79, "topic": "ローア", "title": "ローア (ろーあ)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%AD%E3%83%BC%E3%82%A2", "description": "ピクシブ百科事典によるローアの解説記事。マホロアの宇宙船としての役割や、カービィたちの拠点として提供される施設について紹介している。", "tags": ["ローア", "ピクシブ百科事典", "マホロア", "宇宙船"]}, {"id": 80, "topic": "ローア", "title": "ローアとは [単語記事] - ニコニコ大百科", "url": "https://dic.nicovideo.jp/a/%E3%83%AD%E3%83%BC%E3%82%A2", "description": "ニコニコ大百科によるローアの解説記事。通称「天かける船ローア」と呼ばれる宇宙船の来歴や、パーツを集めて修理する物語の流れを紹介している。", "tags": ["ローア", "ニコニコ大百科", "天かける船", "解説"]}, {"id": 81, "topic": "ローア", "title": "ローア | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%AD%E3%83%BC%E3%82%A2", "description": "ファン運営のカービィ専門Wikiによるローアの記事ページ。マホロアが所有する宇宙船についての情報がまとめられている。", "tags": ["ローア", "カービィWiki", "Fandom", "マホロア"]}, {"id": 82, "topic": "ローア", "title": "天かける船ローア(星のカービィWii) - アニヲタWiki(仮)", "url": "https://wiki3.jp/aniwotadata/page/2246", "description": "非公式まとめWikiによる「天かける船ローア」の解説記事。「心」を持つとされる宇宙船の設定や、ラスボス戦としての演出について詳しく紹介している。", "tags": ["ローア", "天かける船", "アニヲタWiki", "ラスボス戦"]}, {"id": 83, "topic": "食パン", "title": "食パン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E9%A3%9F%E3%83%91%E3%83%B3", "description": "食パンは、生地を発酵させ大きな長方形の型で焼き上げるパン。山型食パンと角型食パンに大別され、日本ではトーストやサンドイッチとして日常的に食べられている。", "tags": ["食パン", "山型食パン", "角型食パン", "イギリスパン", "トースト"]}, {"id": 84, "topic": "食パン", "title": "「食パン」は正式名称じゃない？！名前の由来やパンの分類方法についてご紹介！ | デリシェア", "url": "https://delishare.jp/staple-food/bread-official-name", "description": "パン専門メディアによる解説記事。「食パン」という呼び名の由来には諸説あり、消しパンとの区別説や主食用パンの略称説などを紹介している。", "tags": ["食パン", "名前の由来", "分類", "デリシェア"]}, {"id": 85, "topic": "塩パン", "title": "塩パン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E5%A1%A9%E3%83%91%E3%83%B3", "description": "塩パンは、バターを包んだ生地の表面に岩塩をふって焼き上げる日本のパン。2003年頃に愛媛県八幡浜市のパン店「パン・メゾン」が考案したとされる。", "tags": ["塩パン", "塩バターロール", "ザルツシュタンゲン", "愛媛県", "パン・メゾン"]}, {"id": 86, "topic": "塩パン", "title": "塩パンとは？発祥や特徴・簡単に作れるレシピもご紹介 | デリッシュキッチン", "url": "https://delishkitchen.tv/articles/2920", "description": "料理レシピサイトによる塩パンの解説記事。発祥の経緯や、外はカリッと中はもっちりした食感の秘密、家庭で作れるレシピを紹介している。", "tags": ["塩パン", "レシピ", "デリッシュキッチン", "発祥"]}, {"id": 87, "topic": "あんパン", "title": "あんパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%81%82%E3%82%93%E3%83%91%E3%83%B3", "description": "あんパンは、小豆餡を詰めた日本の菓子パン。1874年に木村屋(現・木村屋總本店)の木村安兵衛らが考案し、酒種で生地を発酵させたことで独特の風味を持つ。", "tags": ["あんパン", "木村屋", "酒種", "菓子パン", "桜あんパン"]}, {"id": 88, "topic": "チョココロネ", "title": "コロネ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%B3%E3%83%AD%E3%83%8D", "description": "コロネは、パン生地を円錐形の芯に巻きつけて焼いた後、内部にクリームを詰める日本発祥の菓子パン。チョコレートクリームを入れたものがチョココロネと呼ばれる。", "tags": ["チョココロネ", "コロネ", "コルネ", "菓子パン", "クリームコロネ"]}, {"id": 89, "topic": "チョココロネ", "title": "コロネ | パンの図鑑", "url": "https://bread.jp.net/corne.php", "description": "パンの図鑑によるコロネの解説記事。名前の由来はフランス語で角を意味する言葉、あるいは楽器のコルネットにちなむとされている。", "tags": ["チョココロネ", "コロネ", "パンの図鑑", "名前の由来"]}, {"id": 90, "topic": "クリームパン", "title": "クリームパン - Wikipedia", "url": "https://ja.m.wikipedia.org/wiki/%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%A0%E3%83%91%E3%83%B3", "description": "クリームパンは、中にカスタードクリームを詰めた菓子パン。1904年に新宿中村屋の創業者・相馬愛蔵がシュークリームに着想を得て考案したのが始まりとされる。", "tags": ["クリームパン", "中村屋", "カスタードクリーム", "菓子パン", "グローブ型"]}, {"id": 91, "topic": "フランスパン", "title": "バゲット - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%90%E3%82%B2%E3%83%83%E3%83%88", "description": "バゲット(フランスパン)は、小麦粉・塩・水・イーストのみで作るフランスの伝統的なパン。棒状で皮の香ばしさとパリッとした食感が特徴で、2022年にはユネスコ無形文化遺産にも登録された。", "tags": ["フランスパン", "バゲット", "バタール", "パリジャン", "ユネスコ無形文化遺産"]}, {"id": 92, "topic": "フランスパン", "title": "フランスのパン | パンの図鑑", "url": "https://bread.jp.net/france.php", "description": "パンの図鑑によるフランスのパン一覧ページ。バゲットやバタール、パン・ド・カンパーニュなど、フランス発祥のパンを五十音順に紹介している。", "tags": ["フランスパン", "パンの図鑑", "一覧", "パン・ド・カンパーニュ"]}, {"id": 93, "topic": "メロンパン", "title": "メロンパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%A1%E3%83%AD%E3%83%B3%E3%83%91%E3%83%B3", "description": "メロンパンは、ビスケット生地をかぶせて焼いた日本の菓子パン。名前の由来には諸説あり、1930年代以降に名称が広まったとされる。地域によって形や中身が異なるのも特徴。", "tags": ["メロンパン", "ビスケット生地", "サンライズ", "菓子パン", "メロンパンナ"]}, {"id": 94, "topic": "ロールパン", "title": "ロールパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%AD%E3%83%BC%E3%83%AB%E3%83%91%E3%83%B3", "description": "ロールパンは、小麦粉・イースト・卵・バターなどから作る巻き型のパンで、朝食や給食で親しまれている。世界各国にバップやキプフェルなど様々な呼び名の派生形がある。", "tags": ["ロールパン", "バターロール", "テーブルロール", "バップ", "キプフェル"]}, {"id": 95, "topic": "揚げパン", "title": "揚げパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E6%8F%9A%E3%81%92%E3%83%91%E3%83%B3", "description": "揚げパンは、コッペパンなどを油で揚げ、砂糖やきな粉で味付けした日本のパン。1952年頃、東京の小学校で給食調理師が考案したのが始まりとされる。", "tags": ["揚げパン", "コッペパン", "きな粉", "大田区", "学校給食"]}, {"id": 96, "topic": "ココア揚げパン", "title": "揚げパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E6%8F%9A%E3%81%92%E3%83%91%E3%83%B3", "description": "揚げパンの解説記事では、砂糖以外にきな粉やシナモン、ココアパウダーなど様々な味付けのバリエーションがあることが紹介されている。ココア味は定番アレンジの一つ。", "tags": ["ココア揚げパン", "揚げパン", "ココアパウダー", "菓子パン"]}, {"id": 97, "topic": "ココア揚げパン", "title": "ココア揚げパンの検索結果 - クックパッド", "url": "https://cookpad.com/jp/search/%E3%82%B3%E3%82%B3%E3%82%A2%E6%8F%9A%E3%81%92%E3%83%91%E3%83%B3", "description": "レシピ投稿サイト クックパッドの「ココア揚げパン」検索結果ページ。家庭で作れるアレンジレシピが多数投稿されている。", "tags": ["ココア揚げパン", "レシピ", "クックパッド"]}, {"id": 98, "topic": "きなこ揚げパン", "title": "揚げパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E6%8F%9A%E3%81%92%E3%83%91%E3%83%B3", "description": "揚げパンの解説記事によれば、きな粉は砂糖と並んで学校給食などで定番の味付けとして紹介されている。", "tags": ["きなこ揚げパン", "揚げパン", "きな粉", "学校給食"]}, {"id": 99, "topic": "きなこ揚げパン", "title": "きなこ揚げパンの検索結果 - クックパッド", "url": "https://cookpad.com/jp/search/%E3%81%8D%E3%81%AA%E3%81%93%E6%8F%9A%E3%81%92%E3%83%91%E3%83%B3", "description": "クックパッドの「きなこ揚げパン」検索結果ページ。給食の味を再現したレシピなどが多数投稿されている。", "tags": ["きなこ揚げパン", "レシピ", "クックパッド", "給食"]}, {"id": 100, "topic": "カレーパン", "title": "カレーパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%AB%E3%83%AC%E3%83%BC%E3%83%91%E3%83%B3", "description": "カレーパンは、カレーを具にした日本の惣菜パン。発祥には諸説あるが、深川の「名花堂」が1927年に「洋食パン」として売り出したのが起源とする説が有力とされる。", "tags": ["カレーパン", "名花堂", "中村屋", "惣菜パン", "洋食パン"]}, {"id": 101, "topic": "焼きそばパン", "title": "焼きそばパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E7%84%BC%E3%81%8D%E3%81%9D%E3%81%B0%E3%83%91%E3%83%B3", "description": "焼きそばパンは、コッペパンに焼きそばを挟んだ日本独自の調理パン。東京・南千住の店で焼きそばとコッペパンを一緒に頼まれたことがきっかけで生まれたとする説が有力。", "tags": ["焼きそばパン", "コッペパン", "惣菜パン", "やきそばパンマン"]}, {"id": 102, "topic": "サンドイッチ", "title": "サンドイッチ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%B5%E3%83%B3%E3%83%89%E3%82%A4%E3%83%83%E3%83%81", "description": "サンドイッチは、パンに具材を挟んだり乗せたりした料理の総称。名称はイギリスの政治家サンドウィッチ伯爵に由来するとされるが、彼が発明したという説は俗説とされている。", "tags": ["サンドイッチ", "サンドウィッチ伯爵", "オープンサンドイッチ", "軽食"]}, {"id": 103, "topic": "サンドイッチ", "title": "サンドイッチの一覧 - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%B5%E3%83%B3%E3%83%89%E3%82%A4%E3%83%83%E3%83%81%E3%81%AE%E4%B8%80%E8%A6%A7", "description": "Wikipediaによるサンドイッチの一覧記事。世界各国の様々なサンドイッチの種類がまとめられている。", "tags": ["サンドイッチ", "一覧", "世界のサンドイッチ"]}, {"id": 104, "topic": "クロワッサン", "title": "クロワッサン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%AD%E3%83%AF%E3%83%83%E3%82%B5%E3%83%B3", "description": "クロワッサンは、バターを折り込んだ生地を焼き上げるフランス発祥のパン。名前はフランス語で三日月を意味し、独特のサクサクとした食感が特徴。", "tags": ["クロワッサン", "パン・オ・ショコラ", "ヴィエノワズリー", "三日月"]}, {"id": 105, "topic": "クロワッサン", "title": "クロワッサン | パンの図鑑", "url": "https://bread.jp.net/croissant.php", "description": "パンの図鑑によるクロワッサンの解説記事。生地とバターの層が作られる仕組みや、発祥に関する諸説を紹介している。", "tags": ["クロワッサン", "パンの図鑑", "層", "発祥"]}, {"id": 106, "topic": "ドイツパン", "title": "「フランスパン」と「ドイツパン」の違いは | 1分で読める!!", "url": "https://lowch.com/archives/22413", "description": "パンの違いを解説するメディアの記事。ドイツパンはライ麦を主成分とし、酸味のある天然酵母(サワー種)を使うことが多い、目の詰まったずっしりした食感が特徴と説明されている。", "tags": ["ドイツパン", "ライ麦パン", "黒パン", "サワー種"]}, {"id": 107, "topic": "ドイツパン", "title": "世界のパン事情 [フランス・イタリア・ドイツ・イギリス・日本 編] | パティシエントマガジン", "url": "https://www.patissient.com/magazine/2265/", "description": "パティシエ向けメディアによる世界のパン事情の記事。ドイツパンの代表格として、ライ麦と小麦を配合したパンやプレッツェル、シュトーレンなどを紹介している。", "tags": ["ドイツパン", "プレッツェル", "シュトーレン", "パティシエントマガジン"]}, {"id": 108, "topic": "イタリアパン", "title": "フォカッチャ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A9%E3%82%AB%E3%83%83%E3%83%81%E3%83%A3", "description": "フォカッチャは、オリーブオイルなどを使って焼き上げるイタリアの平たいパン。ジェノヴァ発祥とされ、ピザの原型とも言われている。", "tags": ["イタリアパン", "フォカッチャ", "ジェノヴァ", "ピザの原型"]}, {"id": 109, "topic": "イタリアパン", "title": "パニーノ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%8B%E3%83%BC%E3%83%8E", "description": "パニーノは、パンに具材を挟んだイタリア料理の軽食。複数形のパニーニという表記が日本や英語圏で広く定着している。", "tags": ["イタリアパン", "パニーノ", "パニーニ", "サンドイッチ"]}, {"id": 110, "topic": "フレンチトースト", "title": "フレンチトースト - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%83%AC%E3%83%B3%E3%83%81%E3%83%88%E3%83%BC%E3%82%B9%E3%83%88", "description": "フレンチトーストは、卵と牛乳を混ぜた液にパンを浸してから焼くパン料理。古代ローマの料理書に類似のレシピが記録されているなど、ヨーロッパで古くから作られてきた。", "tags": ["フレンチトースト", "パン・ペルデュ", "卵液", "バターシュガートースト"]}, {"id": 111, "topic": "ブレット", "title": "パンとブレッド、トーストの違いとは | 株式会社カメリヤ", "url": "https://camelia.co.jp/magazine/knowledge/69", "description": "パン専門店による豆知識記事。パンとブレッドは呼び方が違うだけで同じものであり、英語圏ではブレッド、日本語などではパンと呼ばれると解説している。", "tags": ["ブレット", "ブレッド", "パン", "呼称", "カメリヤ"]}, {"id": 112, "topic": "ブレット", "title": "ブレッドじゃないの!? 食パンの英語が複雑すぎて大混乱！ - macaroni", "url": "https://macaro-ni.jp/37646", "description": "料理情報メディアによる記事。パンとブレッド、トーストという3つの呼び方の違いや、パンにまつわる英語表現について紹介している。", "tags": ["ブレット", "ブレッド", "トースト", "英語表現", "macaroni"]}, {"id": 113, "topic": "ベーグル", "title": "ベーグル - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%99%E3%83%BC%E3%82%B0%E3%83%AB", "description": "ベーグルは、生地を輪の形にして一度茹でてから焼き上げるパン。東欧系ユダヤ人の伝統的な食べ物とされ、ニューヨーク式やモントリオール式など地域による違いも知られている。", "tags": ["ベーグル", "ニューヨークベーグル", "モントリオールベーグル", "ケトリング", "ユダヤ"]}, {"id": 114, "topic": "ナン", "title": "インドのパンの種類まとめ | 知ってお得な暮らしの情報", "url": "https://behonest-bekind.com/many-kind-of-indian-naan/", "description": "インドに滞在した筆者による解説記事。ナンは小麦粉・砂糖・イーストで作る北インドのパンで、タンドール窯で焼き上げることから家庭ではあまり作られないと紹介している。", "tags": ["ナン", "インド", "タンドール", "北インド"]}, {"id": 115, "topic": "ロティ", "title": "「ロティ」と「チャパティ」の違いについて | 名古屋本山タルカリのブログ", "url": "https://tarkari.blog/roti_chapati/", "description": "インド料理店のブログによる解説記事。ロティとチャパティは元々同じものを指す呼び名であり、全粒粉をこねて薄く焼いたパンの総称であると結論づけている。", "tags": ["ロティ", "インド", "チャパティ", "無発酵パン"]}, {"id": 116, "topic": "チャパティ", "title": "チャパティ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%81%E3%83%A3%E3%83%91%E3%83%86%E3%82%A3", "description": "チャパティは、インドやパキスタンなどで食べられる無発酵の薄焼きパン。全粒粉のアタ粉と水だけで生地を作り、タワーと呼ばれる鉄板で焼き上げる、ロティの一種とされている。", "tags": ["チャパティ", "インド", "ロティ", "アタ粉"]}, {"id": 117, "topic": "パラタ", "title": "ロティ vs ナン vs パラタ vs チャパティ: 違いと比較", "url": "https://www.askanydifference.com/ja/roti-vs-naan-vs-paratha-vs-chapati/", "description": "インド亜大陸のパンを比較する解説記事。パラタはロティより厚くナンより薄いパンで、生地を折りたたんで層状の食感を作る点が特徴と説明している。", "tags": ["パラタ", "インド", "ギー", "層状生地"]}, {"id": 118, "topic": "プーリー", "title": "「インドの主食は何？」をインド料理のプロが解説！ | インド宮廷料理 マシャール", "url": "https://mashal.jp/blog/what-is-indias-staple-food/", "description": "インド料理店による解説記事。プーリーはチャパティの生地を油で揚げたパンで、セモリナ粉を加えるとサクっとした食感になると紹介している。", "tags": ["プーリー", "インド", "揚げパン", "チャパティ"]}, {"id": 119, "topic": "ピタパン", "title": "ピタ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%94%E3%82%BF", "description": "ピタ(ピタパン)は、地中海周辺や中東、北アフリカで広く食べられる平たい円形のパン。高温で一気に焼き上げることで中が空洞になり、ポケット状に具材を詰めて食べられる。", "tags": ["ピタパン", "中東", "ポケットブレッド", "地中海"]}, {"id": 120, "topic": "ラヴァシュ", "title": "ラヴァシュ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%A9%E3%83%B4%E3%82%A1%E3%82%B7%E3%83%A5", "description": "ラヴァシュは、カフカスや西アジア、環カスピ海地域で食べられる無発酵の薄焼きパン。ラヴァシュ作りの文化は2014年と2016年にユネスコ無形文化遺産に登録されている。", "tags": ["ラヴァシュ", "アルメニア", "無発酵パン", "ユネスコ無形文化遺産"]}, {"id": 121, "topic": "マナイーシ", "title": "マナイーシ - Wikipedia", "url": "https://ja.m.wikipedia.org/wiki/%E3%83%9E%E3%83%8A%E3%82%A4%E3%83%BC%E3%82%B7", "description": "マナイーシは、パン生地にタイムやチーズ、挽肉などをトッピングして焼くレバント料理の一つ。シリアやレバノンなどで朝食・昼食として親しまれている。", "tags": ["マナイーシ", "レバノン", "ザアタル", "レバント料理"]}, {"id": 122, "topic": "インジェラ", "title": "インジェラ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%AA%E3%83%95%E3%83%81%E3%83%A7%E3%83%99%E3%83%83%E3%83%88%E3%81%97%E3%81%9F%E3%83%86%E3%83%95%E3%82%92%E3%83%9E%E3%83%96%E3%82%AC%E3%83%83%E3%83%89%E3%81%97%E3%81%A6%E3%83%AA%E3%83%83%E3%83%88%E3%81%AB%E3%81%99%E3%82%8B", "description": "インジェラは、テフという穀物を数日かけて発酵させ薄く焼き上げるエチオピアの主食。皿の代わりとしても使われ、煮込み料理をのせて手でちぎりながら食べる。", "tags": ["インジェラ", "エチオピア", "テフ", "発酵"]}, {"id": 123, "topic": "バラディ", "title": "世界のパン一覧｜各国の特徴・歴史・食べ方をわかりやすく解説 | 株式会社アミナコレクション", "url": "https://aminaflyers.amina-co.jp/list/detail/1913", "description": "世界のパンを紹介する記事。エジプトのピタパンは現地で「アエーシ」と呼ばれ、古代エジプトから続くパン文化を汲む主食として今も広く食べられていると紹介している。", "tags": ["バラディ", "エジプト", "アエーシ", "ピタパン"]}, {"id": 124, "topic": "マントウ", "title": "ふんわりフカフカ♪中国の蒸しパン「マントウ」の秘密とレシピ5選をご紹介 - macaroni", "url": "https://macaro-ni.jp/48476", "description": "料理情報メディアによるマントウの解説記事。中国北部の主食である蒸しパンで、諸葛亮にまつわる伝説や、日本の饅頭のルーツになったとされる逸話を紹介している。", "tags": ["マントウ", "中国", "蒸しパン", "饅頭"]}, {"id": 125, "topic": "中華まん", "title": "中華まん - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E4%B8%AD%E8%8F%AF%E3%81%BE%E3%82%93", "description": "中華まんは、発酵させた皮で具を包んで蒸した饅頭。中国の「包子」が原型とされ、日本では肉まん・あんまんなど独自の具材で発展してきた。", "tags": ["中華まん", "肉まん", "あんまん", "包子"]}, {"id": 126, "topic": "花捲", "title": "花捲 - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E8%8A%B1%E6%8D%B2", "description": "花捲(ホアジュアン)は、小麦粉の発酵生地を渦巻き状に成形して蒸す中国の点心。生地に油を塗って巻くことで、独特の渦巻き模様が生まれる。", "tags": ["花捲", "ホアジュエン", "中国", "蒸しパン"]}, {"id": 127, "topic": "バインミー", "title": "バインミー - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%90%E3%82%A4%E3%83%B3%E3%83%9F%E3%83%BC", "description": "バインミーは、フランスパンに具材を挟んだベトナムのサンドイッチ。ベトナム語でパンの総称を意味し、フランス植民地時代の影響でバゲット文化が根付いたことに由来する。", "tags": ["バインミー", "ベトナム", "サンドイッチ", "フランスパン"]}, {"id": 128, "topic": "菠蘿包", "title": "菠蘿包 - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E8%8F%A0%E8%98%BF%E5%8C%85", "description": "菠蘿包(ポーローパーウ)は、クッキー生地をかぶせて焼く香港のパン。日本のメロンパンと共通点が多いが、砂糖粒をまぶさずサクサクとした食感に焼き上げるのが特徴。", "tags": ["菠蘿包", "香港", "パイナップルパン", "メロンパン"]}, {"id": 129, "topic": "パンデサル", "title": "ロールパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%AD%E3%83%BC%E3%83%AB%E3%83%91%E3%83%B3", "description": "ロールパンの解説記事内で、フィリピンで最も一般的に食べられているプレーンなロールパン「パンデサル」が紹介されている。塩パンという名前だがほのかに甘い味わいが特徴。", "tags": ["パンデサル", "フィリピン", "ロールパン"]}, {"id": 130, "topic": "コッペパン", "title": "ロールパン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%AD%E3%83%BC%E3%83%AB%E3%83%91%E3%83%B3", "description": "ロールパンの解説記事では、コッペパンとロールパンの違いにも触れており、食パンと同じ生地で作られるものをコッペパンと分類する業界の基準が紹介されている。", "tags": ["コッペパン", "学校給食", "ロールパン", "日本"]}, {"id": 131, "topic": "プレッツェル", "title": "世界の美味しいパン図鑑｜種類と特徴を学ぼう | Shufoo!プラス", "url": "https://www.shufoo.net/plus/shopping_tips/312", "description": "世界のパンを紹介する記事。プレッツェルは結び目の形をしたドイツ発祥のパンで、太い部分はもっちり、細い部分はカリッとした食感が楽しめると解説している。", "tags": ["プレッツェル", "ドイツ", "ブレッツェル", "結び目"]}, {"id": 132, "topic": "シュトーレン", "title": "世界のパン事情 [フランス・イタリア・ドイツ・イギリス・日本 編] | パティシエントマガジン", "url": "https://www.patissient.com/magazine/2265/", "description": "パティシエ向けメディアの記事。シュトーレンはドイツでクリスマスの1か月前から作る習わしがある菓子パンで、ラム酒漬けのドライフルーツを練りこんで少しずつスライスして食べると紹介している。", "tags": ["シュトーレン", "ドイツ", "クリスマス", "ドライフルーツ"]}, {"id": 133, "topic": "プンパーニッケル", "title": "「フランスパン」と「ドイツパン」の違いは | 1分で読める!!", "url": "https://lowch.com/archives/22413", "description": "パンの違いを解説する記事。プンパーニッケルはライ麦粉の比率が高いドイツパンの一種で、目が詰まったずっしりした食感と酸味のある天然酵母の風味が特徴とされる。", "tags": ["プンパーニッケル", "ドイツ", "黒パン", "ライ麦"]}, {"id": 134, "topic": "ライ麦パン", "title": "世界の美味しいパン図鑑｜種類と特徴を学ぼう | Shufoo!プラス", "url": "https://www.shufoo.net/plus/shopping_tips/312", "description": "ライ麦パンはドイツを代表するパンで、グルテンを含まないライ麦を主成分とするため目の詰まったずっしりした食感になり、噛むほどに味わい深いと紹介されている。", "tags": ["ライ麦パン", "黒パン", "ドイツパン", "北欧"]}, {"id": 135, "topic": "フォカッチャ", "title": "フォカッチャ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A9%E3%82%AB%E3%83%83%E3%83%81%E3%83%A3", "description": "フォカッチャは、オリーブオイルを使って焼き上げるイタリア北部ジェノヴァ発祥の平たいパン。古代ローマ時代から作られ、現在のピザの原型とも言われている。", "tags": ["フォカッチャ", "イタリア", "ジェノヴァ", "オリーブオイル"]}, {"id": 136, "topic": "チャバタ", "title": "【パンの種類一覧】世界にはどんなパンがある？ | 株式会社神戸屋", "url": "https://www.kobeyarestaurant.co.jp/magazine/detail/16", "description": "パンの種類を紹介する記事。チャバタはイタリア語で「スリッパ」を意味する平たい形のパンで、水分を多く含み気泡が大きいのが特徴。サンドイッチにもよく使われる。", "tags": ["チャバタ", "イタリア", "スリッパ", "サンドイッチ"]}, {"id": 137, "topic": "グリッシーニ", "title": "【パンの種類一覧】世界にはどんなパンがある？ | 株式会社神戸屋", "url": "https://www.kobeyarestaurant.co.jp/magazine/detail/16", "description": "グリッシーニは「ブレッドスティック」とも呼ばれる細長い棒状のパン。クラッカーのようなカリッとした食感で、お菓子やおつまみ感覚で楽しめると紹介されている。", "tags": ["グリッシーニ", "イタリア", "ブレッドスティック", "ピエモンテ"]}, {"id": 138, "topic": "パネトーネ", "title": "パネットーネ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%8D%E3%83%83%E3%83%88%E3%83%BC%E3%83%8D", "description": "パネットーネは、ドライフルーツを混ぜ込んだイタリア・ミラノ発祥の発酵菓子パン。パネットーネ種というサワードウで発酵させ、パンドーロとともにクリスマス菓子として親しまれている。", "tags": ["パネトーネ", "イタリア", "ミラノ", "クリスマス"]}, {"id": 139, "topic": "パン・ド・カンパーニュ", "title": "フランスのパン | パンの図鑑", "url": "https://bread.jp.net/france.php", "description": "パンの図鑑によるフランスのパン紹介ページ。パン・ド・カンパーニュはライ麦を混ぜて長時間発酵させることで酸味と香りが生まれる、日持ちの良い田舎パンと解説している。", "tags": ["パン・ド・カンパーニュ", "フランス", "田舎パン", "天然酵母"]}, {"id": 140, "topic": "ブリオッシュ", "title": "ブリオッシュ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AA%E3%82%AA%E3%83%83%E3%82%B7%E3%83%A5", "description": "ブリオッシュは、バターと卵を多く使った口当たりの軽いフランスの発酵パン。16世紀のノルマンディー地方が発祥とされ、ケーキに近い菓子パンとして親しまれている。", "tags": ["ブリオッシュ", "フランス", "ヴィエノワズリー", "ノルマンディー"]}, {"id": 141, "topic": "パン・オ・ショコラ", "title": "パン・オ・ショコラ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%BB%E3%82%B7%E3%83%A7%E3%82%B3%E3%83%A9", "description": "パン・オ・ショコラは、クロワッサンと同じ生地を四角く成形し、チョコレートを詰めて焼くフランスの菓子パン。南西部の一部地域では「ショコラティーヌ」とも呼ばれる。", "tags": ["パン・オ・ショコラ", "フランス", "ショコラティーヌ", "クロワッサン生地"]}, {"id": 142, "topic": "エピ", "title": "パン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%B3", "description": "パン全般を解説するWikipedia記事内で、フランスの郷土パンの一つとして「エピ」が紹介されている。麦の穂のような形に切り込みを入れて焼き上げるバゲットの一種。", "tags": ["エピ", "フランスパン", "麦の穂", "バゲット"]}, {"id": 143, "topic": "フーガス", "title": "パン - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%B3", "description": "パン全般を解説するWikipedia記事内で、プロヴァンス地方のパン「フーガス」が紹介されている。葉のような形に切り込みを入れて焼く平たいフランスパンの一種。", "tags": ["フーガス", "プロヴァンス", "フランスパン", "葉の形"]}, {"id": 144, "topic": "シナモンロール", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。シナモンロールなど、各国の菓子パンや郷土パンが一覧で紹介されている。", "tags": ["シナモンロール", "北欧", "カネルブッレ", "菓子パン"]}, {"id": 145, "topic": "スコーン", "title": "世界の美味しいパン図鑑｜種類と特徴を学ぼう | Shufoo!プラス", "url": "https://www.shufoo.net/plus/shopping_tips/312", "description": "イギリスのパンを紹介する記事。スコーンはイギリス発祥の伝統的な菓子パンで、上部が持ち上がり側面が割れている形が特徴とされる。", "tags": ["スコーン", "イギリス", "アフタヌーンティー", "バノック"]}, {"id": 146, "topic": "ホットクロスバン", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。イースターに食べられるイギリスの菓子パン「ホット・クロス・バン」が一覧の中で紹介されている。", "tags": ["ホットクロスバン", "イギリス", "イースター", "十字"]}, {"id": 147, "topic": "ソーダブレッド", "title": "ソーダブレッド - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%BD%E3%83%BC%E3%83%80%E3%83%96%E3%83%AC%E3%83%83%E3%83%89", "description": "ソーダブレッドは、イースト菌の代わりに重曹を使うアイルランドのクイックブレッド。1840年頃にアイルランドで生まれ、朝昼晩と1日中食卓に登場する主食とされる。", "tags": ["ソーダブレッド", "アイルランド", "重曹", "クイックブレッド"]}, {"id": 148, "topic": "クランペット", "title": "クランペット - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%9A%E3%83%83%E3%83%88", "description": "クランペットは、小麦粉と酵母で作るイギリスの軽食パン。表面に小さな気孔があり弾力のある食感で、バターやジャムを添えて温めて食べるのが一般的。", "tags": ["クランペット", "イギリス", "気孔", "パンケーキ"]}, {"id": 149, "topic": "サワードウブレッド", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。天然酵母で発酵させるサンフランシスコサワーブレッドなど、サワードウ系のパンが紹介されている。", "tags": ["サワードウブレッド", "天然酵母", "サンフランシスコ", "発酵"]}, {"id": 150, "topic": "カイザーロール", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。オーストリア発祥のカイザーゼンメル(カイザーロール)など、様々なロールパンの名称が紹介されている。", "tags": ["カイザーロール", "オーストリア", "カイザーゼンメル", "ロールパン"]}, {"id": 151, "topic": "コーンブレッド", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。とうもろこし粉を使うアメリカの伝統的なパン「コーンブレッド」が一覧の中で紹介されている。", "tags": ["コーンブレッド", "アメリカ", "とうもろこし粉", "南部料理"]}, {"id": 152, "topic": "ハンバーガーバンズ", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。ハンバーガーに使われる丸いパン「ハンバーガーバンズ」がハ行の項目で紹介されている。", "tags": ["ハンバーガーバンズ", "アメリカ", "バンズ", "サンドイッチ"]}, {"id": 153, "topic": "ホットドッグバンズ", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。ホットドッグに使われる細長いパン「ホットドッグバンズ」がハ行の項目で紹介されている。", "tags": ["ホットドッグバンズ", "アメリカ", "バンズ", "軽食"]}, {"id": 154, "topic": "デニッシュペストリー", "title": "デニッシュ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%87%E3%83%8B%E3%83%83%E3%82%B7%E3%83%A5", "description": "デニッシュ(デニッシュ・ペストリー)は、バターを多く含む生地を何重にも折り込んで焼くパン。デンマークやオーストリアなど国によって様々な種類がある。", "tags": ["デニッシュ", "デンマーク", "折り込み生地", "ペストリー"]}, {"id": 155, "topic": "イングリッシュマフィン", "title": "世界の美味しいパン図鑑｜種類と特徴を学ぼう | Shufoo!プラス", "url": "https://www.shufoo.net/plus/shopping_tips/312", "description": "伝統的なイギリスパンであるイングリッシュマフィンは、しっとりした噛みごたえのある食感が特徴。表面にコーングリッツが塗られ、トーストするとカリッとした食感になる。", "tags": ["イングリッシュマフィン", "イギリス", "コーングリッツ", "朝食"]}, {"id": 156, "topic": "アレパ", "title": "アレパ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%82%A2%E3%83%AC%E3%83%91", "description": "アレパは、すり潰したとうもろこしから作るコロンビアやベネズエラの伝統的な薄焼きパン。チーズや肉を挟んだりサンドイッチにするなど、様々な食べ方がある。", "tags": ["アレパ", "ベネズエラ", "コロンビア", "とうもろこし"]}, {"id": 157, "topic": "ポン・デ・ケイジョ", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。ブラジル発祥のもちもちしたチーズパン「ポンデケージョ」がハ行の項目で紹介されている。", "tags": ["ポン・デ・ケイジョ", "ブラジル", "チーズパン", "もちもち"]}, {"id": 158, "topic": "トルティーヤ", "title": "トルティーヤ - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%88%E3%83%AB%E3%83%86%E3%82%A3%E3%83%BC%E3%83%A4", "description": "トルティーヤは、とうもろこしの粉や小麦粉から作るメキシコの伝統的な薄焼きパン生地。メキシコでは主食として食べられ、タコスなど様々な料理に使われる。", "tags": ["トルティーヤ", "メキシコ", "とうもろこし", "タコス"]}, {"id": 159, "topic": "バノック", "title": "バノック - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%90%E3%83%8E%E3%83%83%E3%82%AF", "description": "バノックは、スコットランドなどで食べられる大きく平らな速成パン。円形のバノックを楔形に切り分けたものはスコーンと呼ばれることがある。", "tags": ["バノック", "スコットランド", "クイックブレッド", "スコーン"]}, {"id": 160, "topic": "フライブレッド", "title": "フライブレッド - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%83%A9%E3%82%A4%E3%83%96%E3%83%AC%E3%83%83%E3%83%89", "description": "フライブレッドは、アメリカ先住民ナバホ族に伝わる揚げパン。強制移住の際に配給された材料で作らざるを得なかった歴史を持ち、具材をのせたナバホタコとしても食べられる。", "tags": ["フライブレッド", "ナバホ族", "アメリカ先住民", "ナバホタコ"]}, {"id": 161, "topic": "エンサイマダ", "title": "五十音順(パンの名前) | パンの図鑑", "url": "https://bread.jp.net/japanese_syllabary.php", "description": "世界のパンを五十音順にまとめたパンの図鑑のページ。スペイン・マヨルカ島発祥とされる渦巻き状の菓子パン「エンサイマダ」がア行の項目で紹介されている。", "tags": ["エンサイマダ", "スペイン", "マヨルカ", "渦巻き"]}, {"id": 162, "topic": "フラットブレッド", "title": "フラットブレッド - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%83%A9%E3%83%83%E3%83%88%E3%83%96%E3%83%AC%E3%83%83%E3%83%89", "description": "フラットブレッドは、穀粉と水と塩を混ぜた生地を平らにのばして焼くシンプルなパンの総称。ナンやピタのように酵母を使うものも含め、世界各地に様々な種類がある。", "tags": ["フラットブレッド", "平たいパン", "ナン", "ピタ"]}, {"id": 163, "topic": "フライドブレッド", "title": "フライドブレッド - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%83%95%E3%83%A9%E3%82%A4%E3%83%89%E3%83%96%E3%83%AC%E3%83%83%E3%83%89", "description": "フライドブレッドは、油で揚げ焼きにした薄切りパンを使うイギリスの伝統的な朝食料理。フル・ブレックファストの定番の一品として親しまれている。", "tags": ["フライドブレッド", "イギリス", "フルブレックファスト", "揚げ焼き"]}, {"id": 164, "topic": "マホロアEX", "title": "マホロア (まほろあ)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2", "description": "ピクシブ百科事典によるマホロアの解説記事。第一形態の「EX」戦での言動や表情から、全宇宙支配を企てるに至った心境の変化を考察している。", "tags": ["マホロアEX", "マホロア", "強化形態", "考察"]}, {"id": 165, "topic": "マホロアソウル", "title": "マホロア ソウル | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2_%E3%82%BD%E3%82%A6%E3%83%AB", "description": "暴走したマスタークラウンに飲み込まれ異形と化したマホロアの強化形態についての解説記事。エクストラモードのラスボスとしての技を紹介している。", "tags": ["マホロアソウル", "マホロア", "エクストラモード", "ラスボス"]}, {"id": 166, "topic": "マホロアエピローグ", "title": "マホロアエピローグ - ピクシブ百科事典", "url": "https://dic.pixiv.net/a/%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2%E3%82%A8%E3%83%94%E3%83%AD%E3%83%BC%E3%82%B0", "description": "『星のカービィWiiデラックス』に新規追加されたサブストーリー「マホロアエピローグ 異空をかける旅人」についての解説記事。", "tags": ["マホロアエピローグ", "異空をかける旅人", "Wiiデラックス", "サブストーリー"]}, {"id": 167, "topic": "マスタークラウン", "title": "マスタークラウン - ピクシブ百科事典", "url": "https://dic.pixiv.net/a/%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%B3", "description": "マホロアが追い求めた秘宝「マスタークラウン」についての解説記事。かぶった者の心を支配してしまうとされる、曰くつきの王冠の正体を考察している。", "tags": ["マスタークラウン", "秘宝", "ハルカンドラ", "考察"]}, {"id": 168, "topic": "マスタークラウン", "title": "マスタークラウン(ボス) - ピクシブ百科事典", "url": "https://dic.pixiv.net/a/%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%B3(%E3%83%9C%E3%82%B9)", "description": "マホロアエピローグに登場する、ボスと化したマスタークラウンについての解説記事。完全には破壊されていなかったという後日談を紹介している。", "tags": ["マスタークラウン", "ボス", "マホロアエピローグ", "ラスボス"]}, {"id": 169, "topic": "ハルカンドラ", "title": "ハルカンドラ (はるかんどら)とは【ピクシブ百科事典】", "url": "https://dic.pixiv.net/a/%E3%83%8F%E3%83%AB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%A9", "description": "『星のカービィWii』の舞台の一つ「ハルカンドラ」についての解説記事。未知の魔力とテクノロジーが眠るとされる、伝説の地としての設定を紹介している。", "tags": ["ハルカンドラ", "マホロア", "星のカービィWii", "舞台"]}, {"id": 170, "topic": "ハルカンドラ", "title": "ハルカンドラ | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E3%83%8F%E3%83%AB%E3%82%AB%E3%83%B3%E3%83%89%E3%83%A9", "description": "ファン運営のカービィ専門Wikiによるハルカンドラの解説記事。守護者ランディアや、滅んでしまった文明の歴史について紹介している。", "tags": ["ハルカンドラ", "ランディア", "カービィWiki", "文明"]}, {"id": 171, "topic": "店主マホロア", "title": "店主マホロア | カービィWiki | Fandom", "url": "https://kirby.fandom.com/ja/wiki/%E5%BA%97%E4%B8%BB%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2", "description": "プププ王国でよろずやを営む「店主マホロア」についての解説記事。白と緑を基調とした衣装や、本編マホロアとの関係性を紹介している。", "tags": ["店主マホロア", "商人マホロア", "カービィWiki"]}, {"id": 172, "topic": "店主マホロア", "title": "マホロア（「星のカービィ」シリーズより）【任天堂図鑑】", "url": "https://www.ndw.jp/catalog-chara-kirby-magolor/", "description": "任天堂図鑑によるマホロアの紹介記事。『スーパーカービィハンターズ』でよろずやを経営し、ジェムリンゴなどを販売する店主マホロアの姿を紹介している。", "tags": ["店主マホロア", "スーパーカービィハンターズ", "ジェムリンゴ", "Nintendo DREAM"]}, {"id": 173, "topic": "マホロアグッズ", "title": "タグ マホロア | 星のカービィポータル", "url": "https://www.kirby.jp/goods_tag/sb005/", "description": "星のカービィポータル公式サイトの「マホロア」タグ付きグッズ一覧ページ。ぬいぐるみやアクセサリーなど、マホロア関連の商品がまとめられている。", "tags": ["マホロアグッズ", "公式", "星のカービィポータル", "ぬいぐるみ"]}, {"id": 174, "topic": "マホロアグッズ", "title": "カービィ マホロアのおすすめ人気商品一覧 通販 - Yahoo!ショッピング", "url": "https://shopping.yahoo.co.jp/search/%E3%82%AB%E3%83%BC%E3%83%93%E3%82%A3+%E3%83%9E%E3%83%9B%E3%83%AD%E3%82%A2/0/", "description": "Yahoo!ショッピングのマホロア関連商品の検索結果ページ。ぬいぐるみやアクセサリーなど、様々なマホロアグッズが販売されている。", "tags": ["マホロアグッズ", "Yahoo!ショッピング", "通販", "ぬいぐるみ"]}, {"id": 175, "topic": "弱った方のマホロア", "title": "「マホロアエピローグ」に登場したマホロアがぬいぐるみで登場！ | 星のカービィグッズ情報局<非公式>", "url": "https://kirbygoodsinfo.com/plush/995/", "description": "非公式グッズ情報ブログの記事。マホロアエピローグに登場する、魔力を失って弱体化した白装束姿のマホロアのぬいぐるみ化を紹介している。", "tags": ["弱った方のマホロア", "マホロアエピローグ", "白装束", "ぬいぐるみ"]}, {"id": 176, "topic": "マホロア考察", "title": "どこまで公式？カービィシリーズのあれこれ、ハルカンドラ・ダークマター関連+α編｜すし", "url": "https://note.com/kotobukirby/n/n6d6664dc235e", "description": "個人のファンによるnote記事。ハルカンドラやマホロアエピローグの楽曲、ダークマターとの関連など、公式設定とファンの考察の境目を整理している。", "tags": ["マホロア考察", "ハルカンドラ", "ダークマター", "ファン考察"]}, {"id": 177, "topic": "マホロア登場作品", "title": "マホロア（「星のカービィ」シリーズより）【任天堂図鑑】", "url": "https://www.ndw.jp/catalog-chara-kirby-magolor/", "description": "任天堂図鑑によるマホロアの紹介記事。初登場作の『星のカービィWii』から『スターアライズ』『カービィファイターズ2』まで、歴代の登場作品を振り返っている。", "tags": ["マホロア登場作品", "星のカービィWii", "スターアライズ", "カービィファイターズ2"]}, {"id": 178, "topic": "くま", "title": "TVアニメ「くまクマ熊ベアーぱーんち！」公式サイト", "url": "https://kumakumakumabear.com/", "description": "アニメ「くまクマ熊ベアー」シリーズの公式サイト。引きこもりゲーマーの少女ユナが、クマの着ぐるみの力で異世界の最強冒険者になる物語を紹介している。", "tags": ["くまクマ熊ベアー", "公式サイト", "アニメ", "ユナ"]}, {"id": 179, "topic": "くま", "title": "くまクマ熊ベアー(小説投稿サイト「小説家になろう」)", "url": "https://ncode.syosetu.com/n4185ci/", "description": "作者「くまなの」による原作Web小説の掲載ページ。2014年から連載され、書籍は21巻・コミックは12巻まで発売されている旨が紹介されている。", "tags": ["くまクマ熊ベアー", "小説家になろう", "くまなの", "原作小説"]}, {"id": 180, "topic": "クマ", "title": "くまクマ熊ベアー - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%81%8F%E3%81%BE%E3%82%AF%E3%83%9E%E7%86%8A%E3%83%99%E3%82%A2%E3%83%BC", "description": "くまなのによるライトノベル「くまクマ熊ベアー」の解説記事。2014年から「小説家になろう」で連載され、2024年時点でシリーズ累計320万部を突破したと紹介している。", "tags": ["くまクマ熊ベアー", "Wikipedia", "ライトノベル", "くまなの"]}, {"id": 181, "topic": "クマ", "title": "くまクマ熊ベアー｜アニメ声優・キャラクター | アニメイトタイムズ", "url": "https://www.animatetimes.com/tag/details.php?id=9315", "description": "アニメ情報サイトによる「くまクマ熊ベアー」の紹介記事。あらすじやキャスト声優、スタッフ情報などをまとめている。", "tags": ["くまクマ熊ベアー", "アニメイトタイムズ", "声優", "あらすじ"]}, {"id": 182, "topic": "熊", "title": "くまクマ熊ベアー - Wikipedia", "url": "https://ja.wikipedia.org/wiki/%E3%81%8F%E3%81%BE%E3%82%AF%E3%83%9E%E7%86%8A%E3%83%99%E3%82%A2%E3%83%BC", "description": "「くまクマ熊ベアー」についての百科事典記事。メディアミックス展開として、コミカライズや2020年放送のテレビアニメ第1期などを紹介している。", "tags": ["くまクマ熊ベアー", "メディアミックス", "コミカライズ", "テレビアニメ"]}, {"id": 183, "topic": "熊", "title": "くまクマ熊ベアーぱーんち！ - アニメハック", "url": "https://anime.eiga.com/program/109129/", "description": "アニメ情報サイトによるテレビアニメ第2期「くまクマ熊ベアーぱーんち！」の紹介記事。OP・ED主題歌やイベント情報などをまとめている。", "tags": ["くまクマ熊ベアー", "アニメハック", "第2期", "主題歌"]}, {"id": 184, "topic": "ベアー", "title": "くまクマ熊ベアー | アニメ動画見放題 | dアニメストア", "url": "https://animestore.docomo.ne.jp/animestore/ci_pc?workId=24253", "description": "動画配信サービスdアニメストアの作品ページ。あらすじやキャスト・スタッフ一覧を掲載し、配信状況を紹介している。", "tags": ["くまクマ熊ベアー", "dアニメストア", "配信", "キャスト"]}, {"id": 185, "topic": "ベアー", "title": "くまクマ熊ベアー [アニメ無料動画配信]｜Nアニメ", "url": "https://anime.nicovideo.jp/detail/kumakumakumabear/index.html", "description": "ニコニコのアニメ配信サイトによる作品紹介ページ。あらすじやキービジュアルとともに、無料配信の状況を紹介している。", "tags": ["くまクマ熊ベアー", "ニコニコ", "動画配信", "あらすじ"]}, {"id": 186, "topic": "くまくま", "title": "キャラクター -TVアニメ「くまクマ熊ベアー」公式サイト-", "url": "https://kumakumakumabear.com/1st/chara/", "description": "公式サイトのキャラクター紹介ページ。ユナが召喚できるクマの相棒「くまゆる」「くまきゅう」を含む登場人物が紹介されている。", "tags": ["くまゆる", "くまきゅう", "公式サイト", "キャラクター紹介"]}, {"id": 187, "topic": "くまくま", "title": "くまクマ熊ベアー - Wikipedia(くまゆる・くまきゅう)", "url": "https://ja.wikipedia.org/wiki/%E3%81%8F%E3%81%BE%E3%82%AF%E3%83%9E%E7%86%8A%E3%83%99%E3%82%A2%E3%83%BC", "description": "ユナが「クマさん装備」の力で呼び出せる召喚獣、黒い「くまゆる」と白い「くまきゅう」についての解説。人間の言葉を理解するが話せず「くぅ〜ん」と鳴くなどの設定が紹介されている。", "tags": ["くまゆる", "くまきゅう", "召喚獣", "Wikipedia"]}]};
+const pages = DATA.pages;
+const PAGE_SIZE = 10;
+
+// ---------- バックエンド接続先の設定(iPad等をサーバーにする場合はここを変更) ----------
+// デフォルトは自分のPC上(localhost:8000)。iPadなど別の端末でapp.pyを動かす場合は
+// 「⚙ 接続設定」から iPadのIPアドレス:ポート(例: 192.168.1.23:8000)を入力してください。
+// ブラウザのプライバシー制限のため保存はされず、ページを開き直すとlocalhostに戻ります。
+let BACKEND_HOST = "localhost:8000";
+function backendUrl(path){
+  return `http://${BACKEND_HOST}${path}`;
+}
+function configureBackend(){
+  const input = window.prompt(
+    "検索バックエンド(app.py)を動かしている端末のIPアドレスとポートを入力してください。\n" +
+    "例: 同じPCで動かす場合 → localhost:8000\n" +
+    "例: iPadで動かす場合 → 192.168.1.23:8000 (iPadの「設定 > Wi-Fi > (i)マーク」でIPアドレスを確認できます)",
+    BACKEND_HOST
+  );
+  if(input && input.trim()){
+    BACKEND_HOST = input.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const q = document.getElementById("qTop") ? document.getElementById("qTop").value : "";
+    if(document.getElementById("resultsView").style.display !== "none" && q.trim() !== ""){
+      renderPage();
+    }
+    alert(`接続先を http://${BACKEND_HOST} に設定しました。`);
+  }
+}
+
+let activeTopic = "すべて";
+let contentMode = "web"; // 'web' | 'images'
+let currentPage = 1;
+let lastResults = [];
+let liveResults = []; // ライブクローラーからの結果(接続できた場合のみ)
+
+// ---------- ロゴ描画(1文字ずつ色付け) ----------
+const BRAND = "0ワドワドプロトタイプ";
+function renderLogo(el){
+  el.innerHTML = BRAND.split("").map(ch => `<span>${ch}</span>`).join("");
+}
+renderLogo(document.getElementById("homeLogo"));
+renderLogo(document.getElementById("topLogo"));
+document.getElementById("homeCount").textContent = pages.length;
+
+// ---------- トークン化 (日本語: 文字bi-gram, 英数字: 単語) ----------
+const JP_RE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/;
+function tokenize(text){
+  const tokens = [];
+  let i = 0;
+  const n = text.length;
+  while(i < n){
+    const ch = text[i];
+    if(JP_RE.test(ch)){
+      let j = i, run = "";
+      while(j < n && JP_RE.test(text[j])){ run += text[j]; j++; }
+      if(run.length === 1) tokens.push(run);
+      for(let k=0;k<run.length-1;k++) tokens.push(run.slice(k,k+2));
+      i = j;
+    } else if(/[a-z0-9]/i.test(ch)){
+      let j = i, run = "";
+      while(j < n && /[a-z0-9]/i.test(text[j])){ run += text[j]; j++; }
+      tokens.push(run.toLowerCase());
+      i = j;
+    } else { i++; }
+  }
+  return tokens;
+}
+
+// ---------- 事前計算: TF-IDF ----------
+const docTokens = pages.map(p => {
+  const full = [p.title, p.description, (p.tags||[]).join(" ")].join(" ");
+  const toks = tokenize(full);
+  const counts = {};
+  toks.forEach(t => counts[t] = (counts[t]||0) + 1);
+  return { id: p.id, counts, total: toks.length || 1 };
+});
+const df = {};
+docTokens.forEach(d => { Object.keys(d.counts).forEach(t => { df[t] = (df[t]||0) + 1; }); });
+const N = pages.length;
+function idf(t){ return Math.log((N+1)/((df[t]||0)+1)) + 1; }
+const tfidf = {};
+docTokens.forEach(d => {
+  const w = {};
+  Object.entries(d.counts).forEach(([t,c]) => { w[t] = (c/d.total) * idf(t); });
+  tfidf[d.id] = w;
+});
+const titleTokenSets = {};
+pages.forEach(p => { titleTokenSets[p.id] = new Set(tokenize(p.title)); });
+
+// 簡易 "PageRank" 的な人気度: タグ数とタイトル長から疑似的に算出(デモ用)
+const popularity = {};
+pages.forEach(p => { popularity[p.id] = 0.4 + (p.tags||[]).length * 0.05; });
+
+function search(query){
+  const qTokens = Array.from(new Set(tokenize(query)));
+  if(qTokens.length === 0) return [];
+  const scored = [];
+  for(const p of pages){
+    const weights = tfidf[p.id];
+    let score = 0, matched = 0;
+    for(const t of qTokens){
+      if(weights[t]){
+        score += weights[t];
+        matched++;
+        if(titleTokenSets[p.id].has(t)) score += weights[t] * 1.5;
+      }
+    }
+    if(matched === 0) continue;
+    const coverage = matched / qTokens.length;
+    score = score * (0.5 + 0.5*coverage) + popularity[p.id]*0.05;
+    scored.push({ page:p, score });
+  }
+  scored.sort((a,b) => b.score - a.score);
+  return scored;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function boldMatch(text, qTokens){
+  let out = escapeHtml(text);
+  const words = qTokens.filter(t => t.length >= 2 && !JP_RE.test(t));
+  words.forEach(w => {
+    const re = new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+")","ig");
+    out = out.replace(re, "<b>$1</b>");
+  });
+  return out;
+}
+
+// ---------- タブ(トピック) ----------
+const topics = ["すべて", ...Array.from(new Set(pages.map(p=>p.topic)))];
+function buildTabs(){
+  document.getElementById("tabs").innerHTML = topics.map(t =>
+    `<div class="tab ${t===activeTopic?'active':''}" data-topic="${escapeHtml(t)}">${escapeHtml(t)}</div>`
+  ).join("");
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      activeTopic = tab.dataset.topic;
+      currentPage = 1;
+      runSearch(document.getElementById("qTop").value, true);
+    });
+  });
+}
+document.getElementById("homeTopics").innerHTML = topics.filter(t=>t!=="すべて").map(t =>
+  `<span data-topic="${escapeHtml(t)}">${escapeHtml(t)}</span>`
+).join("");
+document.querySelectorAll("#homeTopics span").forEach(el => {
+  el.addEventListener("click", () => {
+    activeTopic = el.dataset.topic;
+    document.getElementById("qHome").value = "";
+    showResultsView();
+    runSearch("", true);
+  });
+});
+
+// ---------- 画面切り替え ----------
+function showResultsView(){
+  document.getElementById("homeView").style.display = "none";
+  document.getElementById("homeFooter").style.display = "none";
+  document.getElementById("resultsView").style.display = "block";
+  buildTabs();
+  buildModeTabs();
+}
+// ---------- Yahoo!風パネル(カテゴリ・トピックス・ランキング・天気) ----------
+const YAHOO_CATEGORIES = [
+  { icon: "💻", label: "プログラミング", topic: "プログラミング" },
+  { icon: "🍳", label: "料理", topic: "料理" },
+  { icon: "🍞", label: "パン", topic: "食パン" },
+  { icon: "🌌", label: "天文・宇宙", topic: "天文・宇宙" },
+  { icon: "⛰", label: "登山・旅行", topic: "登山・旅行" },
+  { icon: "⚽", label: "サッカー", topic: "サッカー" },
+  { icon: "💪", label: "健康", topic: "健康・フィットネス" },
+  { icon: "🎬", label: "映画", topic: "映画" },
+  { icon: "💰", label: "投資", topic: "投資・資産形成" },
+  { icon: "🎮", label: "星のカービィ", topic: "星のカービィ" },
+];
+
+let yahooWeatherLoaded = false;
+
+function renderYahooPanel(){
+  // カテゴリナビ
+  const navEl = document.getElementById("yahooNav");
+  navEl.innerHTML = YAHOO_CATEGORIES.map(c =>
+    `<div class="yahoo-cat" data-topic="${escapeHtml(c.topic)}"><span class="yahoo-icon">${c.icon}</span><span>${escapeHtml(c.label)}</span></div>`
+  ).join("");
+  navEl.querySelectorAll(".yahoo-cat").forEach(el => {
+    el.addEventListener("click", () => {
+      activeTopic = el.dataset.topic;
+      showResultsView();
+      runSearch("", true);
+    });
+  });
+
+  // トピックス(索引内の実ページからランダムに見出し風に抜粋)
+  const topicsList = document.getElementById("yahooTopicsList");
+  const shuffled = [...pages].sort(() => Math.random() - 0.5).slice(0, 7);
+  topicsList.innerHTML = shuffled.map(p =>
+    `<li><span class="yahoo-topic-tag">${escapeHtml(p.topic||"")}</span><a href="${p.url}" target="_blank" rel="noopener">${escapeHtml(p.title)}</a></li>`
+  ).join("");
+
+  // 検索ランキング(検索履歴 or 索引内トピックのどちらかから見繕う)
+  const rankingList = document.getElementById("yahooRankingList");
+  let rankItems;
+  if(sessionHistory.length > 0){
+    rankItems = sessionHistory.slice(0, 8).map(h => h.word);
+  } else {
+    const topics = Array.from(new Set(pages.map(p => p.topic)));
+    rankItems = topics.sort(() => Math.random() - 0.5).slice(0, 8);
+  }
+  rankingList.innerHTML = rankItems.map(word =>
+    `<li data-word="${escapeHtml(word)}">${escapeHtml(word)}</li>`
+  ).join("");
+  rankingList.querySelectorAll("li").forEach(el => {
+    el.addEventListener("click", () => {
+      qHome.value = el.dataset.word;
+      goSearchFromHome();
+    });
+  });
+
+  // 天気(Open-Meteo、キー不要の公開APIを使用。初回のみ取得)
+  if(!yahooWeatherLoaded){
+    yahooWeatherLoaded = true;
+    loadYahooWeather();
+  }
+}
+
+const WEATHER_CODE_LABELS = {
+  0: "快晴", 1: "晴れ", 2: "晴れ時々くもり", 3: "くもり",
+  45: "霧", 48: "霧氷",
+  51: "小雨", 53: "雨", 55: "強い雨",
+  61: "雨", 63: "雨", 65: "大雨",
+  71: "雪", 73: "雪", 75: "大雪",
+  80: "にわか雨", 81: "にわか雨", 82: "激しいにわか雨",
+  95: "雷雨",
+};
+
+async function loadYahooWeather(lat = 35.6895, lon = 139.6917, label = "東京"){
+  const bodyEl = document.getElementById("yahooWeatherBody");
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`, { signal: controller.signal });
+    clearTimeout(timer);
+    if(!res.ok) throw new Error("weather fetch failed");
+    const data = await res.json();
+    const cw = data.current_weather;
+    const label2 = WEATHER_CODE_LABELS[cw.weathercode] || "―";
+    bodyEl.innerHTML = `
+      <div>${escapeHtml(label)}</div>
+      <div class="yahoo-temp">${cw.temperature}℃</div>
+      <div>${label2} ・ 風速 ${cw.windspeed}m/s</div>
+    `;
+  } catch(e){
+    bodyEl.innerHTML = `天気情報を取得できませんでした<br><span style="font-size:.68rem;color:#999;">(ネットワーク接続をご確認ください)</span>`;
+  }
+}
+
+// 現在地の取得を試み、成功すればその地点の天気に差し替える(失敗時は東京のまま)
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(
+    (pos) => { yahooWeatherLoaded = true; loadYahooWeather(pos.coords.latitude, pos.coords.longitude, "現在地"); },
+    () => { /* 許可されなかった場合は東京の天気のまま(想定内) */ },
+    { timeout: 3000 }
+  );
+}
+
+function showHomeView(){
+  document.getElementById("homeView").style.display = "flex";
+  document.getElementById("homeFooter").style.display = "flex";
+  document.getElementById("resultsView").style.display = "none";
+  document.getElementById("qHome").value = "";
+  activeTopic = "すべて";
+  renderHistory();
+  renderYahooPanel();
+}
+document.getElementById("topLogo").addEventListener("click", showHomeView);
+
+function buildModeTabs(){
+  document.querySelectorAll(".modetab").forEach(el => {
+    el.classList.toggle("active", el.dataset.mode === contentMode);
+  });
+}
+document.querySelectorAll(".modetab").forEach(el => {
+  el.addEventListener("click", () => {
+    contentMode = el.dataset.mode;
+    buildModeTabs();
+    renderPage();
+  });
+});
+
+// ---------- 画像検索(デモ: Lorem Picsumのシード画像 + サイトのfaviconを使用) ----------
+function renderImages(){
+  const el = document.getElementById("imageResults");
+  document.getElementById("imgNote").style.display = "block";
+  if(lastResults.length === 0){
+    el.innerHTML = `<div class="empty">画像が見つかりませんでした。</div>`;
+    return;
+  }
+  const items = lastResults.slice(0, 30);
+  el.innerHTML = items.map(({page}) => {
+    const seed = encodeURIComponent(page.topic + "-" + page.id);
+    const imgUrl = `https://picsum.photos/seed/${seed}/400/300`;
+    return `
+      <a class="imgcard" href="${page.url}" target="_blank" rel="noopener">
+        <div class="thumbwrap"><img loading="lazy" src="${imgUrl}" alt="${escapeHtml(page.title)}"></div>
+        <div class="imgtitle">${escapeHtml(page.title)}</div>
+        <div class="imgsite">${escapeHtml(page.topic||"")}</div>
+      </a>`;
+  }).join("");
+}
+// ---------- 検索履歴 ----------
+// サーバー(app.py)が起動していれば /history から永続履歴を取得して表示する。
+// 起動していない場合は、このタブを開いている間だけ有効なセッション内履歴
+// (sessionHistory)にフォールバックする(ページを再読み込みすると消える)。
+let sessionHistory = [];
+
+function recordLocalHistory(query){
+  if(!query || !query.trim()) return;
+  const q = query.trim();
+  const existing = sessionHistory.find(h => h.word === q);
+  if(existing){
+    existing.count += 1;
+    existing.searched_at = new Date().toISOString();
+    sessionHistory = sessionHistory.filter(h => h.word !== q);
+    sessionHistory.unshift(existing);
+  } else {
+    sessionHistory.unshift({ word: q, searched_at: new Date().toISOString(), count: 1 });
+  }
+  sessionHistory = sessionHistory.slice(0, 20);
+}
+
+async function renderHistory(){
+  const section = document.getElementById("historySection");
+  const chipsEl = document.getElementById("historyChips");
+  let items = sessionHistory;
+
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1200);
+    const res = await fetch(backendUrl("/history?user_id=guest&limit=20"), { signal: controller.signal });
+    clearTimeout(timer);
+    if(res.ok){
+      const data = await res.json();
+      if(data.history && data.history.length > 0) items = data.history;
+    }
+  } catch(e){
+    // app.py が起動していない場合はここに来る(想定内) -> セッション内履歴を使う
+  }
+
+  if(!items || items.length === 0){
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+  chipsEl.innerHTML = items.map(h => `
+    <div class="history-chip" data-word="${escapeHtml(h.word)}">
+      <span class="clock">🕐</span>${escapeHtml(h.word)}${h.count > 1 ? `<span class="count">×${h.count}</span>` : ""}
+    </div>
+  `).join("");
+  document.querySelectorAll(".history-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      qHome.value = chip.dataset.word;
+      goSearchFromHome();
+    });
+  });
+}
+
+document.getElementById("clearHistoryBtn").addEventListener("click", async (e) => {
+  e.stopPropagation();
+  sessionHistory = [];
+  try{
+    await fetch(backendUrl("/history?user_id=guest"), { method: "DELETE" });
+  } catch(err){
+    // app.py未起動時はセッション内履歴のクリアのみ行う(想定内)
+  }
+  renderHistory();
+});
+
+function runSearch(query, resetPage){
+  if(resetPage) currentPage = 1;
+  document.getElementById("qTop").value = query;
+  recordLocalHistory(query);
+
+  const t0 = performance.now();
+  let pool = pages;
+  if(activeTopic !== "すべて") pool = pages.filter(p => p.topic === activeTopic);
+
+  let results;
+  if(query.trim() === ""){
+    results = pool.map(p => ({page:p, score:popularity[p.id]}));
+    results.sort((a,b)=> b.score - a.score);
+  } else {
+    const scoredAll = search(query);
+    const poolIds = new Set(pool.map(p=>p.id));
+    results = scoredAll.filter(r => poolIds.has(r.page.id));
+  }
+  const t1 = performance.now();
+  lastResults = results;
+
+  const statsEl = document.getElementById("stats");
+  const seconds = ((t1-t0)/1000).toFixed(2);
+  statsEl.innerHTML = query
+    ? `約 ${results.length} 件の結果 &middot; 索引 ${pages.length}件中 &middot; (${seconds} 秒)`
+    : `索引ページ ${results.length}件を表示中 &middot; (${seconds} 秒)`;
+
+  renderPage();
+}
+
+function renderPage(){
+  const resultsEl = document.getElementById("results");
+  const paginationEl = document.getElementById("pagination");
+  const imageResultsEl = document.getElementById("imageResults");
+  const imgNoteEl = document.getElementById("imgNote");
+  const query = document.getElementById("qTop").value;
+  const qTokens = tokenize(query);
+
+  if(contentMode === "images"){
+    resultsEl.style.display = "none";
+    paginationEl.style.display = "none";
+    document.getElementById("aiSummaryBox").style.display = "none";
+    document.getElementById("reverseImageSearch").style.display = "block";
+    imageResultsEl.style.display = "grid";
+    renderImages();
+    return;
+  } else {
+    imageResultsEl.style.display = "none";
+    imgNoteEl.style.display = "none";
+    document.getElementById("reverseImageSearch").style.display = "none";
+    resultsEl.style.display = "block";
+    paginationEl.style.display = "flex";
+  }
+
+  if(query.trim() !== "") { tryAiSummary(query); tryDbSearch(query); }
+  else document.getElementById("aiSummaryBox").style.display = "none";
+
+  if(lastResults.length === 0){
+    resultsEl.innerHTML = `<div class="empty">「${escapeHtml(query)}」に一致する情報は見つかりませんでした。<br>別のキーワードを試すか、app.py を起動していればその場でライブクロールを試みます。</div>`;
+    paginationEl.innerHTML = "";
+    tryLiveCrawl(query);
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(lastResults.length / PAGE_SIZE));
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage-1)*PAGE_SIZE;
+  const pageItems = lastResults.slice(start, start+PAGE_SIZE);
+
+  resultsEl.innerHTML = pageItems.map(({page}) => `
+    <div class="result">
+      <div class="favtitle">
+        <div class="favicon">${escapeHtml((page.topic||"?")[0])}</div>
+        <div>
+          <div class="site">${escapeHtml(page.topic||"")}</div>
+          <div class="url">${escapeHtml(page.url)}</div>
+        </div>
+      </div>
+      <h3><a href="${page.url}" target="_blank" rel="noopener">${boldMatch(page.title, qTokens)}</a></h3>
+      <p class="desc">${boldMatch(page.description, qTokens)}</p>
+      <div class="tags">${(page.tags||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join("")}</div>
+    </div>
+  `).join("");
+
+  // ページネーション
+  let html = "";
+  html += `<button ${currentPage===1?'disabled':''} data-p="${currentPage-1}">&lt; 前へ</button>`;
+  for(let p=1; p<=totalPages; p++){
+    if(totalPages > 9 && Math.abs(p-currentPage) > 3 && p!==1 && p!==totalPages){
+      if(p === 2 || p === totalPages-1) html += `<span style="padding:0 4px;color:#70757a;">…</span>`;
+      continue;
+    }
+    html += `<button class="page ${p===currentPage?'active':''}" data-p="${p}">${p}</button>`;
+  }
+  html += `<button ${currentPage===totalPages?'disabled':''} data-p="${currentPage+1}">次へ &gt;</button>`;
+  paginationEl.innerHTML = html;
+  paginationEl.querySelectorAll("button[data-p]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentPage = parseInt(btn.dataset.p, 10);
+      renderPage();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+  });
+
+  if(query.trim() !== "") tryLiveCrawl(query);
+}
+
+// ---------- AI要約ボックス連携 ----------
+// app.py をローカルで起動していれば(python app.py -> port 8000)、検索のたびに
+// http://localhost:8000/ai-search?q=... へ問い合わせ、AI要約(モック)を
+// Google風の「AI要約」ボックスとして表示する。起動していなければ
+// 静かにタイムアウトし、何も表示しない。
+let aiSummaryToken = 0;
+async function tryAiSummary(query){
+  const myToken = ++aiSummaryToken;
+  const box = document.getElementById("aiSummaryBox");
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1500);
+    const res = await fetch(backendUrl(`/ai-search?q=${encodeURIComponent(query)}`), { signal: controller.signal });
+    clearTimeout(timer);
+    if(myToken !== aiSummaryToken) return;
+    if(!res.ok){ box.style.display = "none"; return; }
+    const data = await res.json();
+    if(!data.ai_answer){ box.style.display = "none"; return; }
+    box.innerHTML = `
+      <div class="ai-label"><span class="dot"></span>AI要約(app.py /ai-search)</div>
+      <div class="ai-text">${escapeHtml(data.ai_answer)}</div>
+      <div class="ai-note">変換後キーワード: 「${escapeHtml(data.converted_keyword||"")}」&middot; AIによる要約は誤りを含む場合があります</div>
+    `;
+    box.style.display = "block";
+  } catch(e){
+    box.style.display = "none"; // バックエンド未起動時はここに来る(想定内)
+  }
+}
+
+// ---------- DB索引検索(app.py の /search)連携 ----------
+// app.pyが起動していれば、転置インデックス+SQLiteによる本格的な検索結果も
+// 「🗄 DB索引検索結果」として通常結果の下に追加表示する。
+let dbSearchToken = 0;
+async function tryDbSearch(query){
+  const myToken = ++dbSearchToken;
+  const existing = document.getElementById("dbResultsBox");
+  if(existing) existing.remove();
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1500);
+    const res = await fetch(backendUrl(`/search?q=${encodeURIComponent(query)}`), { signal: controller.signal });
+    clearTimeout(timer);
+    if(myToken !== dbSearchToken) return;
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data.results || data.results.length === 0) return;
+    const box = document.createElement("div");
+    box.id = "dbResultsBox";
+    box.innerHTML = `<div style="font-size:.72rem;color:#1a7a4c;background:#eafaf1;border:1px solid #b7e4c7;border-radius:4px;padding:6px 10px;margin:6px 0 14px;display:inline-block;">🗄 DB索引検索結果(app.py /search)</div>` +
+      data.results.map(r => `
+        <div class="result">
+          <div class="favtitle">
+            <div class="favicon" style="background:linear-gradient(135deg,#34A853,#4285F4);">D</div>
+            <div><div class="site">app.py /search</div><div class="url">${escapeHtml(r.url)}</div></div>
+          </div>
+          <h3><a href="${r.url}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a></h3>
+          <p class="desc">${escapeHtml(r.snippet||"")}</p>
+        </div>`).join("");
+    document.getElementById("results").appendChild(box);
+  } catch(e){
+    // app.py が起動していない場合はここに来る(想定内)
+  }
+}
+
+// ---------- ライブクローラー連携 ----------
+// app.py をローカルで起動していれば(python app.py -> port 8000)、検索の瞬間に
+// http://localhost:8000/live-crawl?q=... へ問い合わせ、その場でクロール・DB保存された
+// 新鮮な結果を「ライブクロール結果」として先頭に追加表示する。起動していない場合は
+// 静かにタイムアウトし、何も起こらない(通常のローカル索引のみ表示)。
+let liveCrawlToken = 0;
+async function tryLiveCrawl(query){
+  const myToken = ++liveCrawlToken;
+  const existingLive = document.getElementById("liveResultsBox");
+  if(existingLive) existingLive.remove();
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4000); // 実クロールなので少し長めに待つ
+    const res = await fetch(backendUrl(`/live-crawl?q=${encodeURIComponent(query)}`), { signal: controller.signal });
+    clearTimeout(timer);
+    if(myToken !== liveCrawlToken) return; // 別の検索に追い越された
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data.results || data.results.length === 0) return;
+    const box = document.createElement("div");
+    box.id = "liveResultsBox";
+    box.innerHTML = `<div style="font-size:.72rem;color:#b06a00;background:#fff7e6;border:1px solid #ffe1a8;border-radius:4px;padding:6px 10px;margin-bottom:14px;display:inline-block;">⚡ ライブクロール結果(たった今取得・DBに保存済み・${data.elapsed}秒)</div>` +
+      data.results.map(r => `
+        <div class="result">
+          <div class="favtitle">
+            <div class="favicon" style="background:linear-gradient(135deg,#EA4335,#FBBC05);">L</div>
+            <div><div class="site">app.py /live-crawl</div><div class="url">${escapeHtml(r.url)}</div></div>
+          </div>
+          <h3><a href="${r.url}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a></h3>
+          <p class="desc">${escapeHtml(r.description||"")}</p>
+        </div>`).join("");
+    document.getElementById("results").prepend(box);
+  } catch(e){
+    // app.py が起動していない場合はここに来る(想定内)
+  }
+}
+
+// ---------- イベント: ホーム画面 ----------
+const qHome = document.getElementById("qHome");
+qHome.addEventListener("input", () => {
+  document.getElementById("clearHome").style.display = qHome.value ? "block" : "none";
+});
+document.getElementById("clearHome").addEventListener("click", () => { qHome.value=""; qHome.focus(); document.getElementById("clearHome").style.display="none"; });
+function goSearchFromHome(){
+  showResultsView();
+  runSearch(qHome.value, true);
+}
+qHome.addEventListener("keydown", e => { if(e.key === "Enter") goSearchFromHome(); });
+document.getElementById("btnSearchHome").addEventListener("click", goSearchFromHome);
+document.getElementById("btnLucky").addEventListener("click", () => {
+  showResultsView();
+  const randomPage = pages[Math.floor(Math.random()*pages.length)];
+  window.open(randomPage.url, "_blank");
+  runSearch(qHome.value, true);
+});
+document.getElementById("aboutLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  alert("0ワドワドプロトタイプは、実験用のミニ検索エンジンです。\n索引ページ数: " + pages.length + "件\nTF-IDF + 日本語bi-gramで検索しています。\ncrawler.py を自分のPCで実行すると索引を増やせます。");
+});
+document.getElementById("btnConfigureHome").addEventListener("click", configureBackend);
+document.getElementById("btnConfigureTop").addEventListener("click", configureBackend);
+
+document.getElementById("agentsStatusLink").addEventListener("click", async (e) => {
+  e.preventDefault();
+  try{
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(backendUrl("/agents/status"), { signal: controller.signal });
+    clearTimeout(timer);
+    if(!res.ok){ alert("自律クローラーの状況を取得できませんでした。"); return; }
+    const data = await res.json();
+    if(!data.agents || data.agents.length === 0){
+      alert("自律クローラーはまだ起動していません(app.py起動直後は少し時間がかかります)。");
+      return;
+    }
+    const lines = data.agents.map(a =>
+      `${a.name}\n  状態: ${a.status} / 最終クエリ: 「${a.last_query||"-"}」/ 累計収集: ${a.total_collected}件 / 巡回回数: ${a.cycle_count}回`
+    ).join("\n\n");
+    alert(`🤖 自律クローラー ${data.agent_count}体の状況\n(各エージェントは2分クールタイムで自律的に巡回中)\n\n${lines}`);
+  } catch(err){
+    alert("バックエンド(app.py)に接続できませんでした。「⚙ 接続設定」でapp.pyが起動している端末のアドレスを確認してください。");
+  }
+});
+
+// ---------- 類似画像アップロード検索 ----------
+let risSelectedFile = null;
+
+function risSetFile(file){
+  if(!file || !file.type.startsWith("image/")) return;
+  risSelectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById("risPreviewImg").src = e.target.result;
+    document.getElementById("risFilename").textContent = file.name;
+    document.getElementById("risPreview").style.display = "flex";
+    document.getElementById("risButton").disabled = false;
+    document.getElementById("risStatus").textContent = "";
+    document.getElementById("risResults").innerHTML = "";
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById("risFileInput").addEventListener("change", (e) => {
+  risSetFile(e.target.files[0]);
+});
+
+const risDropzone = document.getElementById("risDropzone");
+["dragover"].forEach(evt => {
+  risDropzone.addEventListener(evt, (e) => { e.preventDefault(); risDropzone.classList.add("dragover"); });
+});
+["dragleave", "drop"].forEach(evt => {
+  risDropzone.addEventListener(evt, (e) => { e.preventDefault(); risDropzone.classList.remove("dragover"); });
+});
+risDropzone.addEventListener("drop", (e) => {
+  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if(file) risSetFile(file);
+});
+
+document.getElementById("risButton").addEventListener("click", () => performReverseImageSearch());
+
+async function performReverseImageSearch(){
+  if(!risSelectedFile) return;
+  const statusEl = document.getElementById("risStatus");
+  const resultsEl = document.getElementById("risResults");
+  const btn = document.getElementById("risButton");
+  btn.disabled = true;
+  resultsEl.innerHTML = "";
+  statusEl.textContent = "🔎 画像を解析して、データベースと照合しています...";
+
+  try{
+    const formData = new FormData();
+    formData.append("image", risSelectedFile);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(backendUrl("/image-search"), {
+      method: "POST",
+      body: formData,
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    if(!res.ok){
+      const errData = await res.json().catch(() => ({}));
+      statusEl.textContent = "エラー: " + (errData.error || `サーバーエラー(${res.status})`);
+      return;
+    }
+    const data = await res.json();
+
+    if(data.total_images === 0){
+      statusEl.textContent = "画像データベースが空です。image_crawler.py を実行して画像を収集してから、app.py を再起動してください。";
+      return;
+    }
+    if(!data.results || data.results.length === 0){
+      statusEl.textContent = `データベース内の${data.total_images}枚の画像の中に、似ている画像は見つかりませんでした。`;
+      return;
+    }
+
+    statusEl.textContent = `データベース内 ${data.total_images}枚 の中から、似ている画像を ${data.results.length}件 見つけました。`;
+    resultsEl.innerHTML = data.results.map(r => `
+      <a class="ris-card" href="${r.page_url}" target="_blank" rel="noopener">
+        <div class="thumbwrap">
+          <img loading="lazy" src="${r.image_url}" alt="${escapeHtml(r.page_title||'')}">
+          <span class="ris-score">${r.similarity}% 一致</span>
+        </div>
+        <div class="ris-title">${escapeHtml(r.page_title || r.page_url)}</div>
+      </a>
+    `).join("");
+  } catch(e){
+    statusEl.textContent = "バックエンド(app.py)に接続できませんでした。「⚙ 接続設定」でapp.pyが起動している端末のアドレスを確認してください。";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---------- 音声入力(Web Speech API) ----------
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function setupMic(micBtn, inputEl, statusEl, onFinish){
+  if(!micBtn) return;
+
+  if(!SpeechRecognitionAPI){
+    micBtn.addEventListener("click", () => {
+      if(statusEl) statusEl.textContent = "このブラウザは音声入力に対応していません(Chrome / Edgeでお試しください)";
+    });
+    return;
+  }
+
+  let recognition = null;
+  let listening = false;
+
+  function createRecognition(){
+    const r = new SpeechRecognitionAPI();
+    r.lang = "ja-JP";
+    r.interimResults = true;
+    r.maxAlternatives = 1;
+    r.continuous = false;
+
+    r.onstart = () => {
+      listening = true;
+      micBtn.classList.add("listening");
+      if(statusEl) statusEl.textContent = "🎤 聞き取り中... なにか話してください";
+    };
+    r.onend = () => {
+      listening = false;
+      micBtn.classList.remove("listening");
+      if(statusEl && statusEl.textContent.startsWith("🎤")) statusEl.textContent = "";
+    };
+    r.onerror = (e) => {
+      listening = false;
+      micBtn.classList.remove("listening");
+      let msg;
+      switch(e.error){
+        case "not-allowed":
+        case "service-not-allowed":
+          msg = "マイクの使用が許可されていません。ブラウザのアドレスバー付近の設定からマイクを許可してください。";
+          break;
+        case "no-speech":
+          msg = "音声が検出されませんでした。もう一度マイクをクリックして話してください。";
+          break;
+        case "network":
+          msg = "音声認識サーバーに接続できませんでした。ネットワーク接続を確認してください。";
+          break;
+        default:
+          msg = "音声入力でエラーが発生しました(" + e.error + ")。もう一度お試しください。";
+      }
+      if(statusEl) statusEl.textContent = msg;
+    };
+    r.onresult = (e) => {
+      let transcript = "";
+      for(let i=0; i<e.results.length; i++){ transcript += e.results[i][0].transcript; }
+      inputEl.value = transcript;
+      if(e.results[e.results.length-1].isFinal){
+        if(statusEl) statusEl.textContent = "";
+        onFinish(transcript);
+      }
+    };
+    return r;
+  }
+
+  micBtn.addEventListener("click", () => {
+    if(listening && recognition){
+      recognition.stop();
+      return;
+    }
+    if(!window.isSecureContext && location.protocol === "file:"){
+      if(statusEl) statusEl.textContent = "音声入力はセキュリティ上の理由でブロックされる場合があります。うまく動かない場合は「python -m http.server」等でこのページを配信して開いてください。";
+    }
+    recognition = createRecognition();
+    try{
+      recognition.start();
+    } catch(err){
+      if(statusEl) statusEl.textContent = "音声入力を開始できませんでした。もう一度クリックしてください。";
+    }
+  });
+}
+
+setupMic(document.getElementById("micHome"), qHome, document.getElementById("micStatusHome"), (text) => {
+  document.getElementById("clearHome").style.display = text ? "block" : "none";
+  goSearchFromHome();
+});
+
+// ---------- イベント: 結果画面 ----------
+const qTop = document.getElementById("qTop");
+qTop.addEventListener("input", () => {
+  document.getElementById("clearTop").style.display = qTop.value ? "block" : "none";
+  runSearch(qTop.value, true);
+});
+document.getElementById("clearTop").addEventListener("click", () => { qTop.value=""; qTop.focus(); runSearch("", true); });
+qTop.addEventListener("keydown", e => { if(e.key === "Enter") runSearch(qTop.value, true); });
+setupMic(document.getElementById("micTop"), qTop, document.getElementById("micStatusTop"), (text) => {
+  document.getElementById("clearTop").style.display = text ? "block" : "none";
+  runSearch(text, true);
+});
+
+// ---------- 検索ボックスのカメラボタン(画像で検索) ----------
+function switchToImageSearchAndRun(file){
+  if(!file) return;
+  showResultsView();
+  contentMode = "images";
+  buildModeTabs();
+  renderPage();
+  risSetFile(file);
+  performReverseImageSearch();
+}
+
+document.getElementById("cameraHome").addEventListener("click", () => {
+  document.getElementById("cameraHomeInput").click();
+});
+document.getElementById("cameraHomeInput").addEventListener("change", (e) => {
+  switchToImageSearchAndRun(e.target.files[0]);
+  e.target.value = ""; // 同じファイルを選び直しても change が発火するようにする
+});
+
+document.getElementById("cameraTop").addEventListener("click", () => {
+  document.getElementById("cameraTopInput").click();
+});
+document.getElementById("cameraTopInput").addEventListener("change", (e) => {
+  switchToImageSearchAndRun(e.target.files[0]);
+  e.target.value = "";
+});
+
+// 初期状態: ホーム画面表示
+showHomeView();
+</script>
+</body>
+</html>
